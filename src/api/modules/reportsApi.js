@@ -35,8 +35,7 @@ export function getFilteredReports(paramsOptions) {
   const params = new URLSearchParams();
 
   params.append("type", reportType);
-  if (warehouse_manager)
-    params.append("warehouse_manager", warehouse_manager);
+  if (warehouse_manager) params.append("warehouse_manager", warehouse_manager);
   if (machine) params.append("machine", machine);
   if (mechanism) params.append("mechanism", mechanism);
   if (client_name) params.append("client_name", client_name);
@@ -61,13 +60,16 @@ export function getFilteredReports(paramsOptions) {
       params.append("invoices_page", invoices_page + 1);
     if (invoices_page_size)
       params.append("invoices_page_size", invoices_page_size);
-    if (items_page !== undefined)
-      params.append("items_page", items_page + 1);
-    if (items_page_size)
-      params.append("items_page_size", items_page_size);
+    if (items_page !== undefined) params.append("items_page", items_page + 1);
+    if (items_page_size) params.append("items_page_size", items_page_size);
   } else {
     params.append("all", "true");
   }
 
   return httpClient.get(`/reports/filter?${params.toString()}`);
+}
+
+// /invoice/fifo-prices/:id
+export function getItemPriceSources(id) {
+  return httpClient.get(`/invoice/fifo-prices/${id}`);
 }

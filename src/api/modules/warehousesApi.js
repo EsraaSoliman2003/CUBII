@@ -1,3 +1,4 @@
+// src/api/modules/warehousesApi.js
 import { httpClient } from "../httpClient";
 
 export function getWarehouses({ page, page_size, all = false }) {
@@ -21,7 +22,6 @@ export function deleteWarehouse(id) {
 }
 
 export function importWarehouse(data) {
-  // لو بتبعتِ ملف Excel استخدمي FormData هنا
   return httpClient.post("/warehouse/excel", data);
 }
 
