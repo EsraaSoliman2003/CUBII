@@ -1,5 +1,7 @@
+// src/api/modules/usersApi.js
 import { httpClient } from "../httpClient";
 
+// list users (بـ pagination)
 export function getUsers({ page, page_size, all = false }) {
   const queryParams = all
     ? "all=true"
@@ -8,6 +10,7 @@ export function getUsers({ page, page_size, all = false }) {
   return httpClient.get(`/auth/users?${queryParams}`);
 }
 
+// current logged in user
 export function getCurrentUser() {
   return httpClient.get("/auth/user");
 }
