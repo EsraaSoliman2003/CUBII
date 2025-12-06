@@ -28,7 +28,7 @@ export default function EditInvoicePage() {
       .then((res) => {
         if (!mounted) return;
 
-        const data = res.data; // 👈 ده التعديل المهم
+        const data = res.data;
 
         const datePart = data.created_at
           ? data.created_at.split(" ")[0]
@@ -71,7 +71,6 @@ export default function EditInvoicePage() {
     setIsSaving(true);
     try {
       await apiUpdateInvoice({ id, ...editingInvoice });
-      // const data = res.data; // لو احتجتي تستخدمى الداتا بعدين
 
       setSnackbar({
         open: true,
@@ -123,6 +122,8 @@ export default function EditInvoicePage() {
         isPurchasesType={editingInvoice.type === "اضافه"}
         showCommentField
         isCreate={false}
+        canEsterdad={false}
+        setSelectedInvoice={undefined}
       />
 
       <div className="mt-4 flex justify-center">

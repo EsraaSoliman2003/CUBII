@@ -48,6 +48,8 @@ export default function InvoiceItemsTable({
     selectedInvoice?.type === "أمانات" ||
     editingInvoice?.type === "أمانات";
 
+  const showReturnedQtyColumn = isAmanatType && canEsterdad;
+
   // تحميل الموردين
   useEffect(() => {
     const shouldFetch = isEditing && isAdditionType && !justEditUnitPrice;
@@ -77,6 +79,7 @@ export default function InvoiceItemsTable({
     };
   }, [isEditing, isAdditionType, justEditUnitPrice]);
 
+  // تحميل المخازن
   useEffect(() => {
     const shouldFetch = isEditing && !justEditUnitPrice;
     if (!shouldFetch) return;
@@ -266,10 +269,7 @@ export default function InvoiceItemsTable({
 
   return (
     <>
-      <div
-        className="mt-3 border border-gray-300 rounded-md"
-        dir="rtl"
-      >
+      <div className="mt-3 border border-gray-300 rounded-md" dir="rtl">
         <table className="w-full text-sm">
           <thead className="bg-gray-200 text-gray-800">
             <tr>
@@ -296,6 +296,13 @@ export default function InvoiceItemsTable({
               <th className="border border-gray-300 px-2 py-1">الباركود</th>
               <th className="border border-gray-300 px-2 py-1">الموقع</th>
               <th className="border border-gray-300 px-2 py-1">الكمية</th>
+
+              {showReturnedQtyColumn && (
+                <th className="border border-gray-300 px-2 py-1">
+                  الكمية المستردة
+                </th>
+              )}
+
               {isTransferType && (
                 <th className="border border-gray-300 px-2 py-1">
                   الموقع الجديد
@@ -314,244 +321,273 @@ export default function InvoiceItemsTable({
           </thead>
 
           <tbody>
-            {items.map((row, index) => (
-              <tr key={index} className="even:bg-gray-50">
-                {/* index + delete */}
-                <td className="border border-gray-300 px-2 py-1 text-center align-middle relative">
-                  <span>{index + 1}</span>
-                  {isEditing && !justEditUnitPrice && (
-                    <button
-                      type="button"
-                      onClick={() => deleteRow(index)}
-                      className="absolute -left-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full text-red-600 text-xs hover:bg-red-50"
-                      title="حذف السطر"
-                    >
-                      ✕
-                    </button>
-                  )}
-                  {isAmanatType &&
-                    canEsterdad &&
-                    !isEditing &&
-                    selectedInvoice?.status !== "returned" &&
-                    selectedInvoice?.status !== "تم الاسترداد" && (
+            {items.map((row, index) => {
+              // نفس الصنف من نسخة الفاتورة الأصلية (selectedInvoice)
+              const originalRow =
+                Array.isArray(selectedInvoice?.items) &&
+                selectedInvoice.items[index]
+                  ? selectedInvoice.items[index]
+                  : row;
+
+              const totalReturned =
+                typeof originalRow?.total_returned === "number"
+                  ? originalRow.total_returned
+                  : 0;
+
+              const isFullyReturned =
+                originalRow?.is_fully_returned ||
+                (typeof totalReturned === "number" &&
+                  typeof originalRow?.quantity === "number" &&
+                  totalReturned >= originalRow.quantity);
+
+              return (
+                <tr key={index} className="even:bg-gray-50">
+                  {/* index + delete + استرداد */}
+                  <td className="border border-gray-300 px-2 py-1 text-center align-middle relative">
+                    <span>{index + 1}</span>
+                    {isEditing && !justEditUnitPrice && (
                       <button
                         type="button"
-                        className="absolute -left-8 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full text-blue-600 text-xs hover:bg-blue-50"
-                        title="استرداد"
-                        onClick={() => {
-                          setReturnItemIndex(index);
-                          setReturnDialogOpen(true);
-                        }}
+                        onClick={() => deleteRow(index)}
+                        className="absolute -left-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full text-red-600 text-xs hover:bg-red-50"
+                        title="حذف السطر"
                       >
-                        ⟲
+                        ✕
                       </button>
                     )}
-                </td>
+                    {isAmanatType &&
+                      canEsterdad &&
+                      !isEditing &&
+                      !!setSelectedInvoice &&
+                      !isFullyReturned &&
+                      selectedInvoice?.status !== "returned" &&
+                      selectedInvoice?.status !== "تم الاسترداد" && (
+                        <button
+                          type="button"
+                          className="absolute -left-8 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full text-blue-600 text-xs hover:bg-blue-50"
+                          title="استرداد"
+                          onClick={() => {
+                            setReturnItemIndex(index);
+                            setReturnDialogOpen(true);
+                          }}
+                        >
+                          ⟲
+                        </button>
+                      )}
+                  </td>
 
-                {/* supplier */}
-                {isAdditionType && (
-                  <td className="border border-gray-300 px-2 py-1">
+                  {/* supplier */}
+                  {isAdditionType && (
+                    <td className="border border-gray-300 px-2 py-1">
+                      {isEditing && !justEditUnitPrice ? (
+                        <CustomAutoCompleteField
+                          isLoading={isSuppliersLoading}
+                          values={suppliers}
+                          editingItem={row}
+                          fieldName="supplier_name"
+                          setEditingItem={(newRow) => {
+                            const updated = [...editingInvoice.items];
+                            updated[index] = {
+                              ...updated[index],
+                              supplier_name:
+                                newRow.supplier_name || newRow.name || "",
+                            };
+                            setEditingInvoice({
+                              ...editingInvoice,
+                              items: updated,
+                            });
+                          }}
+                          placeholder="اسم المورد"
+                          isBig
+                        />
+                      ) : (
+                        <span>{row.supplier_name || "-"}</span>
+                      )}
+                    </td>
+                  )}
+
+                  {/* item (name + barcode) */}
+                  <td className="border border-gray-300 px-2 py-1 min-w-[220px]">
                     {isEditing && !justEditUnitPrice ? (
                       <CustomAutoCompleteField
-                        isLoading={isSuppliersLoading}
-                        values={suppliers}
-                        editingItem={row}
-                        fieldName="supplier_name"
-                        setEditingItem={(newRow) => {
-                          const updated = [...editingInvoice.items];
-                          updated[index] = {
-                            ...updated[index],
-                            supplier_name:
-                              newRow.supplier_name || newRow.name || "",
-                          };
-                          setEditingInvoice({
-                            ...editingInvoice,
-                            items: updated,
-                          });
+                        isLoading={isWarehousesLoading}
+                        values={itemOptions}
+                        editingItem={{
+                          ...row,
+                          item_name: `${row.item_name || ""}${
+                            row.barcode ? ` - ${row.barcode}` : ""
+                          }`,
                         }}
-                        placeholder="اسم المورد"
+                        fieldName="item_name"
+                        placeholder="الصنف (اسم - باركود)"
                         isBig
+                        setEditingItem={(_, option) => {
+                          handleChangeItem(index, option || null);
+                        }}
                       />
                     ) : (
-                      <span>{row.supplier_name || "-"}</span>
+                      <span>
+                        {row.item_name}
+                        {row.barcode ? ` - ${row.barcode}` : ""}
+                      </span>
                     )}
                   </td>
-                )}
 
-                {/* item (name + barcode) */}
-                <td className="border border-gray-300 px-2 py-1 min-w-[220px]">
-                  {isEditing && !justEditUnitPrice ? (
-                    <CustomAutoCompleteField
-                      isLoading={isWarehousesLoading}
-                      values={itemOptions}
-                      editingItem={{
-                        ...row,
-                        item_name: `${row.item_name || ""}${
-                          row.barcode ? ` - ${row.barcode}` : ""
-                        }`,
-                      }}
-                      fieldName="item_name"
-                      placeholder="الصنف (اسم - باركود)"
-                      isBig
-                      setEditingItem={(_, option) => {
-                        handleChangeItem(index, option || null);
-                      }}
-                    />
-                  ) : (
-                    <span>
-                      {row.item_name}
-                      {row.barcode ? ` - ${row.barcode}` : ""}
-                    </span>
-                  )}
-                </td>
+                  {/* barcode only */}
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    {row.barcode}
+                  </td>
 
-                {/* barcode only */}
-                <td className="border border-gray-300 px-2 py-1 text-center">
-                  {row.barcode}
-                </td>
-
-                {/* location */}
-                <td className="border border-gray-300 px-2 py-1 min-w-[180px]">
-                  {isEditing && !justEditUnitPrice ? (
-                    <CustomAutoCompleteField
-                      // isLoading={row.item_name === "" ? false : true}
-                      values={row.availableLocations || []}
-                      editingItem={row}
-                      fieldName="location"
-                      placeholder="الموقع"
-                      setEditingItem={(newRow) => {
-                        if (!newRow.location) return;
-                        handleChangeLocation(index, newRow);
-                      }}
-                    />
-                  ) : (
-                    <span>{row.location}</span>
-                  )}
-                </td>
-
-                {/* quantity */}
-                <td className="border border-gray-300 px-1 py-1 w-24 text-center">
-                  {isEditing ? (
-                    <NumberInput
-                      value={row.quantity}
-                      className="w-full h-8 text-center text-sm border-0"
-                      onClick={(e) => {
-                        if (!row.location) {
-                          setSnackbar({
-                            open: true,
-                            message: "يجب تحديد موقع العنصر أولا",
-                            type: "info",
-                          });
-                          e.target.blur();
-                        }
-                      }}
-                      onChange={(e) => {
-                        if (!row.location) {
-                          setSnackbar({
-                            open: true,
-                            message: "يجب تحديد موقع العنصر أولا",
-                            type: "info",
-                          });
-                          e.target.blur();
-                          return;
-                        }
-                        handleChangeQuantity(index, e.target.value);
-                      }}
-                    />
-                  ) : (
-                    <span>{row.quantity}</span>
-                  )}
-                </td>
-
-                {/* transfer: new_location */}
-                {isTransferType && (
+                  {/* location */}
                   <td className="border border-gray-300 px-2 py-1 min-w-[180px]">
                     {isEditing && !justEditUnitPrice ? (
                       <CustomAutoCompleteField
-                        // isLoading={row.item_name === "" ? false : true}
-                        values={(row.availableLocations || []).filter(
-                          (l) => l.location !== row.location
-                        )}
+                      // isLoading={row.item_name === "" ? false : true}
+                        values={row.availableLocations || []}
                         editingItem={row}
-                        fieldName="new_location"
-                        placeholder="الموقع الجديد"
+                        fieldName="location"
+                        placeholder="الموقع"
                         setEditingItem={(newRow) => {
-                          const updated = [...editingInvoice.items];
-                          updated[index] = {
-                            ...updated[index],
-                            new_location: newRow.new_location || "",
-                          };
-                          setEditingInvoice({
-                            ...editingInvoice,
-                            items: updated,
-                          });
+                          if (!newRow.location) return;
+                          handleChangeLocation(index, newRow);
                         }}
                       />
                     ) : (
-                      <span>{row.new_location || "-"}</span>
+                      <span>{row.location}</span>
                     )}
                   </td>
-                )}
 
-                {/* price + total */}
-                {(isPurchasesType || isAdditionType) && (
-                  <>
-                    <td className="border border-gray-300 px-1 py-1 w-24 text-center">
-                      {isEditing && isAdditionType ? (
-                        <NumberInput
-                          value={row.unit_price}
-                          className="w-full h-8 text-center text-sm border-0"
-                          onClick={(e) => {
-                            if (!row.location) {
-                              setSnackbar({
-                                open: true,
-                                message: "يجب تحديد موقع العنصر أولا",
-                                type: "info",
-                              });
-                              e.target.blur();
-                            }
-                          }}
-                          onChange={(e) => {
-                            if (!row.location) {
-                              setSnackbar({
-                                open: true,
-                                message: "يجب تحديد موقع العنصر أولا",
-                                type: "info",
-                              });
-                              e.target.blur();
-                              return;
-                            }
-                            handleChangeUnitPrice(index, e.target.value);
+                  {/* quantity */}
+                  <td className="border border-gray-300 px-1 py-1 w-24 text-center">
+                    {isEditing ? (
+                      <NumberInput
+                        value={row.quantity}
+                        className="w-full h-8 text-center text-sm border-0"
+                        onClick={(e) => {
+                          if (!row.location) {
+                            setSnackbar({
+                              open: true,
+                              message: "يجب تحديد موقع العنصر أولا",
+                              type: "info",
+                            });
+                            e.target.blur();
+                          }
+                        }}
+                        onChange={(e) => {
+                          if (!row.location) {
+                            setSnackbar({
+                              open: true,
+                              message: "يجب تحديد موقع العنصر أولا",
+                              type: "info",
+                            });
+                            e.target.blur();
+                            return;
+                          }
+                          handleChangeQuantity(index, e.target.value);
+                        }}
+                      />
+                    ) : (
+                      <span>{row.quantity}</span>
+                    )}
+                  </td>
+
+                  {/* returned quantity */}
+                  {showReturnedQtyColumn && (
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      {totalReturned}
+                    </td>
+                  )}
+
+                  {/* transfer: new_location */}
+                  {isTransferType && (
+                    <td className="border border-gray-300 px-2 py-1 min-w-[180px]">
+                      {isEditing && !justEditUnitPrice ? (
+                        <CustomAutoCompleteField
+                        // isLoading={row.item_name === "" ? false : true}
+                          values={(row.availableLocations || []).filter(
+                            (l) => l.location !== row.location
+                          )}
+                          editingItem={row}
+                          fieldName="new_location"
+                          placeholder="الموقع الجديد"
+                          setEditingItem={(newRow) => {
+                            const updated = [...editingInvoice.items];
+                            updated[index] = {
+                              ...updated[index],
+                              new_location: newRow.new_location || "",
+                            };
+                            setEditingInvoice({
+                              ...editingInvoice,
+                              items: updated,
+                            });
                           }}
                         />
                       ) : (
-                        <span>{row.unit_price}</span>
+                        <span>{row.new_location || "-"}</span>
                       )}
                     </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      {isEditing && !justEditUnitPrice && !isAdditionType
-                        ? "-"
-                        : row.total_price}
-                    </td>
-                  </>
-                )}
-
-                {/* description */}
-                <td className="border border-gray-300 px-2 py-1 max-w-xs">
-                  {isEditing && !justEditUnitPrice ? (
-                    <textarea
-                      className="w-full h-8 text-right text-xs border-0 outline-none resize-none"
-                      value={row.description || ""}
-                      onChange={(e) =>
-                        handleChangeDescription(index, e.target.value)
-                      }
-                    />
-                  ) : (
-                    <span className="text-xs">{row.description}</span>
                   )}
-                </td>
-              </tr>
-            ))}
+
+                  {/* price + total */}
+                  {(isPurchasesType || isAdditionType) && (
+                    <>
+                      <td className="border border-gray-300 px-1 py-1 w-24 text-center">
+                        {isEditing && isAdditionType ? (
+                          <NumberInput
+                            value={row.unit_price}
+                            className="w-full h-8 text-center text-sm border-0"
+                            onClick={(e) => {
+                              if (!row.location) {
+                                setSnackbar({
+                                  open: true,
+                                  message: "يجب تحديد موقع العنصر أولا",
+                                  type: "info",
+                                });
+                                e.target.blur();
+                              }
+                            }}
+                            onChange={(e) => {
+                              if (!row.location) {
+                                setSnackbar({
+                                  open: true,
+                                  message: "يجب تحديد موقع العنصر أولا",
+                                  type: "info",
+                                });
+                                e.target.blur();
+                                return;
+                              }
+                              handleChangeUnitPrice(index, e.target.value);
+                            }}
+                          />
+                        ) : (
+                          <span>{row.unit_price}</span>
+                        )}
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1 text-center">
+                        {isEditing && !justEditUnitPrice && !isAdditionType
+                          ? "-"
+                          : row.total_price}
+                      </td>
+                    </>
+                  )}
+
+                  {/* description */}
+                  <td className="border border-gray-300 px-2 py-1 max-w-xs">
+                    {isEditing && !justEditUnitPrice ? (
+                      <textarea
+                        className="w-full h-8 text-right text-xs border-0 outline-none resize-none"
+                        value={row.description || ""}
+                        onChange={(e) =>
+                          handleChangeDescription(index, e.target.value)
+                        }
+                      />
+                    ) : (
+                      <span className="text-xs">{row.description}</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

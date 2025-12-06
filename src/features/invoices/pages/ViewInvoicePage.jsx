@@ -1,7 +1,10 @@
 // src/features/invoices/pages/ViewInvoicePage.jsx
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getInvoice } from "../../../api/modules/invoicesApi";
+import {
+  getInvoice,
+  returnWarrantyInvoicePartially,
+} from "../../../api/modules/invoicesApi";
 import InvoiceLayout from "../components/InvoiceLayout";
 
 export default function ViewInvoicePage() {
@@ -9,6 +12,7 @@ export default function ViewInvoicePage() {
   const [invoice, setInvoice] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // تحميل الفاتورة
   useEffect(() => {
     let mounted = true;
     setIsLoading(true);
@@ -17,7 +21,7 @@ export default function ViewInvoicePage() {
       .then((res) => {
         if (!mounted) return;
 
-        const data = res.data; // ← التعديل المهم هنا فقط
+        const data = res.data;
 
         const datePart = data.created_at
           ? data.created_at.split(" ")[0]
@@ -46,6 +50,63 @@ export default function ViewInvoicePage() {
     };
   }, [id]);
 
+  // تحميل حالة الاسترداد لفاتورة الأمانات
+  useEffect(() => {
+    if (!invoice || invoice.type !== "أمانات") return;
+
+    let mounted = true;
+
+    returnWarrantyInvoicePartially({ id: invoice.id })
+      .then((res) => {
+        if (!mounted) return;
+
+        const status = res.data;
+        if (!status?.items) return;
+
+        setInvoice((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            items: (prev.items || []).map((it) => {
+              const match = status.items.find(
+                (r) =>
+                  r.item_name === it.item_name &&
+                  r.item_bar === it.barcode &&
+                  r.location === it.location
+              );
+
+              if (!match) {
+                return {
+                  ...it,
+                  total_returned: it.total_returned || 0,
+                  is_fully_returned: it.is_fully_returned || false,
+                };
+              }
+
+              return {
+                ...it,
+                total_returned:
+                  typeof match.total_returned === "number"
+                    ? match.total_returned
+                    : it.total_returned || 0,
+                is_fully_returned:
+                  typeof match.is_fully_returned === "boolean"
+                    ? match.is_fully_returned
+                    : it.is_fully_returned || false,
+              };
+            }),
+          };
+        });
+      })
+      .catch((err) =>
+        console.error("returnWarrantyInvoicePartially error", err)
+      );
+
+    return () => {
+      mounted = false;
+    };
+  }, [invoice?.id, invoice?.type]);
+
   if (isLoading || !invoice) {
     return (
       <div className="w-full h-[60vh] flex items-center justify-center">
@@ -53,6 +114,8 @@ export default function ViewInvoicePage() {
       </div>
     );
   }
+
+  const isAmanat = invoice.type === "أمانات";
 
   return (
     <div className="w-[90%] mx-auto mt-10 mb-10" dir="rtl">
@@ -67,6 +130,8 @@ export default function ViewInvoicePage() {
         isPurchasesType={invoice.type === "اضافه"}
         showCommentField
         isCreate={false}
+        canEsterdad={isAmanat}
+        setSelectedInvoice={setInvoice}
       />
     </div>
   );

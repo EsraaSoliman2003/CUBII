@@ -1,3 +1,4 @@
+// src/features/manageInvoices/components/InvoiceActionsCell.jsx
 import React from "react";
 
 const InvoiceActionsCell = ({
@@ -28,6 +29,7 @@ const InvoiceActionsCell = ({
 
   return (
     <div className="flex items-center justify-center gap-2">
+      {/* زرار فتح الفاتورة */}
       <button
         type="button"
         onClick={() => onOpenInvoice(invoice)}
@@ -36,6 +38,7 @@ const InvoiceActionsCell = ({
         فتح
       </button>
 
+      {/* حذف */}
       {canDelete && (
         <button
           type="button"
@@ -47,6 +50,7 @@ const InvoiceActionsCell = ({
         </button>
       )}
 
+      {/* تفاصيل سعرية */}
       {showDetailsAllowed && (
         <button
           type="button"
@@ -57,6 +61,7 @@ const InvoiceActionsCell = ({
         </button>
       )}
 
+      {/* أمانات */}
       {isDeposit && (
         <div className="text-xs">
           {isReturned ? (
@@ -66,7 +71,7 @@ const InvoiceActionsCell = ({
           ) : (
             <button
               type="button"
-              onClick={() => onRecoverDeposit(invoice)}
+              onClick={() => onOpenInvoice(invoice)}
               disabled={recoverLoading || !canRecoverDeposits}
               className="px-2 py-1 text-xs rounded border border-cyan-600 text-cyan-700 bg-white hover:bg-cyan-50 disabled:opacity-60"
             >

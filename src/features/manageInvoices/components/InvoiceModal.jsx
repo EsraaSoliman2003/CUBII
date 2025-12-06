@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import {
   getInvoice,
   updateInvoice as apiUpdateInvoice,
+  returnWarrantyInvoicePartially,
 } from "../../../api/modules/invoicesApi";
 import InvoiceLayout from "../../invoices/components/InvoiceLayout";
 import SnackBar from "../../../components/common/SnackBar";
@@ -21,6 +22,7 @@ export default function InvoiceModal({ open, onClose, invoice }) {
     type: "",
   });
 
+  // 1) تحميل الفاتورة
   useEffect(() => {
     if (!open || !invoice?.id) return;
 
@@ -74,6 +76,107 @@ export default function InvoiceModal({ open, onClose, invoice }) {
       mounted = false;
     };
   }, [open, invoice?.id]);
+
+  // 2) لو الفاتورة أمانات: تحميل حالة الاسترداد الجزئي وتحديث البنود
+  useEffect(() => {
+    if (!selectedInvoice || selectedInvoice.type !== "أمانات") return;
+
+    let mounted = true;
+
+    const fetchReturnStatus = async () => {
+      try {
+        const res = await returnWarrantyInvoicePartially({
+          id: selectedInvoice.id,
+        });
+        const status = res.data;
+        if (!mounted || !status?.items) return;
+
+        // تحديث selectedInvoice
+        setSelectedInvoice((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            items: (prev.items || []).map((it) => {
+              const match = status.items.find(
+                (r) =>
+                  r.item_name === it.item_name &&
+                  r.item_bar === it.barcode &&
+                  r.location === it.location
+              );
+
+              if (!match) {
+                return {
+                  ...it,
+                  total_returned: it.total_returned || 0,
+                  is_fully_returned: it.is_fully_returned || false,
+                };
+              }
+
+              return {
+                ...it,
+                total_returned:
+                  typeof match.total_returned === "number"
+                    ? match.total_returned
+                    : it.total_returned || 0,
+                is_fully_returned:
+                  typeof match.is_fully_returned === "boolean"
+                    ? match.is_fully_returned
+                    : it.is_fully_returned || false,
+              };
+            }),
+          };
+        });
+
+        // تحديث editingInvoice عشان لو في وضع تعديل بردو يشوف نفس القيم
+        setEditingInvoice((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            items: (prev.items || []).map((it) => {
+              const match = status.items.find(
+                (r) =>
+                  r.item_name === it.item_name &&
+                  r.item_bar === it.barcode &&
+                  r.location === it.location
+              );
+
+              if (!match) {
+                return {
+                  ...it,
+                  total_returned: it.total_returned || 0,
+                  is_fully_returned: it.is_fully_returned || false,
+                };
+              }
+
+              return {
+                ...it,
+                total_returned:
+                  typeof match.total_returned === "number"
+                    ? match.total_returned
+                    : it.total_returned || 0,
+                is_fully_returned:
+                  typeof match.is_fully_returned === "boolean"
+                    ? match.is_fully_returned
+                    : it.is_fully_returned || false,
+              };
+            }),
+          };
+        });
+      } catch (err) {
+        console.error(
+          "returnWarrantyInvoicePartially error in InvoiceModal",
+          err
+        );
+        // مش لازم نطلع SnackBar هنا، يكفي اللوج
+      }
+    };
+
+    fetchReturnStatus();
+
+    return () => {
+      mounted = false;
+    };
+  }, [selectedInvoice?.id, selectedInvoice?.type]);
 
   const handleClose = () => {
     setIsEditing(false);
@@ -156,6 +259,8 @@ export default function InvoiceModal({ open, onClose, invoice }) {
     );
   }
 
+  const isDeposit = selectedInvoice?.type === "أمانات";
+
   return (
     <>
       <div
@@ -233,6 +338,7 @@ export default function InvoiceModal({ open, onClose, invoice }) {
               isPurchasesType={selectedInvoice.type === "اضافه"}
               showCommentField
               isCreate={false}
+              canEsterdad={isDeposit}
               setSelectedInvoice={setSelectedInvoice}
             />
           )}

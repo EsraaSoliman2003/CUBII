@@ -1,5 +1,5 @@
 // src/features/invoices/components/ReturnQuantityDialog.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   returnWarrantyInvoice,
   returnWarrantyInvoicePartially,
@@ -21,6 +21,12 @@ export default function ReturnQuantityDialog({
   });
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (open) {
+      setQuantity("");
+    }
+  }, [open, selectedItemIndex]);
+
   if (!open || !selectedInvoice || selectedItemIndex == null) {
     return (
       <SnackBar
@@ -34,12 +40,30 @@ export default function ReturnQuantityDialog({
 
   const item = selectedInvoice.items[selectedItemIndex];
 
+  const maxQuantity =
+    Math.max(
+      0,
+      (Number(item?.quantity) || 0) -
+        (Number(item?.total_returned) || 0)
+    ) || 0;
+
   const handleConfirm = async () => {
-    if (!quantity || Number(quantity) <= 0) {
+    const q = Number(quantity);
+
+    if (!q || q <= 0) {
       setSnackbar({
         open: true,
         message: "برجاء إدخال كمية صحيحة",
         type: "error",
+      });
+      return;
+    }
+
+    if (q > maxQuantity) {
+      setSnackbar({
+        open: true,
+        message: `الكمية القصوى المسموح بها هي ${maxQuantity}`,
+        type: "warning",
       });
       return;
     }
@@ -51,7 +75,7 @@ export default function ReturnQuantityDialog({
         itemName: item.item_name,
         itemBar: item.barcode,
         location: item.location,
-        quantity: Number(quantity),
+        quantity: q,
       });
 
       const res = await returnWarrantyInvoicePartially({
@@ -61,29 +85,29 @@ export default function ReturnQuantityDialog({
 
       setSelectedInvoice((prev) => ({
         ...prev,
-        items: prev.items.map((it, idx) =>
-          idx === selectedItemIndex
-            ? {
-                ...it,
-                total_returned:
-                  updatedStatus?.items?.find(
-                    (r) =>
-                      r.item_name === it.item_name &&
-                      r.item_bar === it.barcode &&
-                      r.location === it.location
-                  )?.total_returned ||
-                  it.total_returned ||
-                  0,
-                is_fully_returned:
-                  updatedStatus?.items?.find(
-                    (r) =>
-                      r.item_name === it.item_name &&
-                      r.item_bar === it.barcode &&
-                      r.location === it.location
-                  )?.is_fully_returned || false,
-              }
-            : it
-        ),
+        items: prev.items.map((it, idx) => {
+          if (idx !== selectedItemIndex) return it;
+
+          const match =
+            updatedStatus?.items?.find(
+              (r) =>
+                r.item_name === it.item_name &&
+                r.item_bar === it.barcode &&
+                r.location === it.location
+            ) || {};
+
+          return {
+            ...it,
+            total_returned:
+              typeof match.total_returned === "number"
+                ? match.total_returned
+                : it.total_returned || 0,
+            is_fully_returned:
+              typeof match.is_fully_returned === "boolean"
+                ? match.is_fully_returned
+                : false,
+          };
+        }),
       }));
 
       setSnackbar({
@@ -114,6 +138,11 @@ export default function ReturnQuantityDialog({
           <h2 className="text-base font-semibold text-gray-800 mb-3 text-center">
             كمية الاسترداد
           </h2>
+
+          <p className="text-xs text-gray-600 mb-2 text-center">
+            الكمية المتاحة للاسترداد:{" "}
+            <span className="font-semibold">{maxQuantity}</span>
+          </p>
 
           <input
             type="number"
