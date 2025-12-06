@@ -1,7 +1,10 @@
+// src/api/modules/reportsApi.js
 import { httpClient } from "../httpClient";
 
 export function getReports() {
-  return httpClient.get("/reports/?all=true");
+  return httpClient.get("/reports/", {
+    params: { all: true },
+  });
 }
 
 export function getFilteredReports(paramsOptions) {
@@ -22,8 +25,8 @@ export function getFilteredReports(paramsOptions) {
     location,
     start_date,
     end_date,
-    page,
-    page_size,
+    page = 0,
+    page_size = 10,
     invoices_page,
     invoices_page_size,
     items_page,

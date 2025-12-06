@@ -1,4 +1,7 @@
+// src/api/modules/invoicesApi.js
 import { httpClient } from "../httpClient";
+
+// ================== Invoice IDs / Numbers ==================
 
 export function getLastInvoiceId() {
   return httpClient.get("/invoice/last-id");
@@ -8,17 +11,22 @@ export function getInvoicesNumbers() {
   return httpClient.get("/invoice/sales-invoices");
 }
 
+// ================== Invoices CRUD ==================
+
 export function createInvoice(invoice) {
   return httpClient.post("/invoice/", invoice);
 }
 
-export function getInvoices({ type, page, page_size, all = false }) {
-  if (all) {
-    return httpClient.get(`/invoice/${type}?all=true`);
-  }
-  return httpClient.get(
-    `/invoice/${type}?page=${page + 1}&page_size=${page_size}&all=false`
-  );
+export function getInvoices(params) {
+  const { type, page = 0, page_size = 20, all = false } = params;
+
+  const queryParams = all
+    ? { all: true }
+    : { page: page + 1, page_size, all: false };
+
+  return httpClient.get(`/invoice/${type}`, {
+    params: queryParams,
+  });
 }
 
 export function updateInvoice({ id, ...body }) {
@@ -48,7 +56,7 @@ export function returnWarrantyInvoice({ id, ...body }) {
   return httpClient.post(`/invoice/${id}/ReturnWarranty`, body);
 }
 
-export function getWarrantyReturnStatus(id) {
+export function returnWarrantyInvoicePartially({ id }) {
   return httpClient.get(`/invoice/${id}/WarrantyReturnStatus`);
 }
 
@@ -59,6 +67,8 @@ export function priceReport(id) {
 export function getInvoice(id) {
   return httpClient.get(`/invoice/${id}`);
 }
+
+// ================== Invoice reports (prices, fifo) ==================
 
 export function detailsReport(id) {
   return httpClient.get(`/invoice/fifo-prices/${id}`);

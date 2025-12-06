@@ -1,12 +1,14 @@
 // src/api/modules/warehousesApi.js
 import { httpClient } from "../httpClient";
 
-export function getWarehouses({ page, page_size, all = false }) {
+export function getWarehouses({ page = 0, page_size = 20, all = false }) {
   const queryParams = all
-    ? "all=true"
-    : `page=${page + 1}&page_size=${page_size}&all=false`;
+    ? { all: true }
+    : { page: page + 1, page_size, all: false };
 
-  return httpClient.get(`/warehouse/?${queryParams}`);
+  return httpClient.get("/warehouse/", {
+    params: queryParams,
+  });
 }
 
 export function addWarehouse(newItem) {

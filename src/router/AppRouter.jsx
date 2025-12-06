@@ -17,7 +17,7 @@ import LoginPage from "../features/auth/pages/LoginPage";
 import UsersPage from "../features/users/pages/UsersPage";
 import RegisterPage from "../features/auth/pages/RegisterPage";
 
-import CreateInvoicePage from "../features/createInvoice/pages/CreateInvoicePage";
+import CreateInvoicePage from "../features/invoices/pages/CreateInvoicePage";
 import  ManageInvoicesPage from "../features/manageInvoices/pages/ManageInvoicesPage";
 import ItemsPage from "../features/items/pages/ItemsPage";
 import MachinesPage from "../features/machines/pages/MachinesPage";
