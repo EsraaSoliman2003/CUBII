@@ -246,22 +246,34 @@ export function useInvoiceForm() {
   const validateRequiredFields = (inv, isPO = false) => {
     if (!inv.type) return "يجب تحديد نوع العملية";
 
-    const requiredFields = isPO
-      ? ["machine_name", "mechanism_name"]
-      : inv.type === "مرتجع"
-        ? ["machine_name", "mechanism_name", "original_invoice_id"]
-        : ["machine_name", "mechanism_name"];
+    const noMachineMechanismRequiredTypes = ["اضافه", "تحويل"];
 
-    const missing = requiredFields.filter((f) => !inv[f]);
-    if (missing.length > 0) {
-      if (isPO) return "يجب ملء اسم الماكينة واسم الميكانيزم";
-      if (inv.type === "مرتجع")
-        return "يجب ملء اسم الماكينة واسم الميكانيزم ورقم الفاتورة الأصلية";
-      return "يجب ملء اسم الماكينة واسم الميكانيزم";
+    let requiredFields = [];
+
+    if (isPO) {
+      requiredFields = ["machine_name", "mechanism_name"];
+    } else if (inv.type === "مرتجع") {
+      requiredFields = [
+        "machine_name",
+        "mechanism_name",
+        "original_invoice_id",
+      ];
+    } else if (!noMachineMechanismRequiredTypes.includes(inv.type)) {
+      requiredFields = ["machine_name", "mechanism_name"];
+    }
+
+    if (requiredFields.length > 0) {
+      const missing = requiredFields.filter((f) => !inv[f]);
+      if (missing.length > 0) {
+        if (isPO) return "يجب ملء اسم الماكينة واسم الميكانيزم";
+        if (inv.type === "مرتجع")
+          return "يجب ملء اسم الماكينة واسم الميكانيزم ورقم الفاتورة الأصلية";
+        return "يجب ملء اسم الماكينة واسم الميكانيزم";
+      }
     }
 
     if (inv.type === "اضافه") {
-      const itemsWithoutSupplier = inv.items.filter(
+      const itemsWithoutSupplier = (inv.items || []).filter(
         (it) => !it.supplier_name || it.supplier_name.trim() === ""
       );
       if (itemsWithoutSupplier.length > 0) {
