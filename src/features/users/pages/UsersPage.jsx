@@ -1,14 +1,20 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useCurrentUser } from "../../auth/hooks/useCurrentUser";
 import { useUsersData } from "../hooks/useUsersData";
 import UsersTable from "../components/UsersTable";
 import EditUserModal from "../components/EditUserModal";
 import ChangePasswordModal from "../components/ChangePasswordModal";
 import ConfirmDeleteModal from "../../../components/common/ConfirmDeleteModal";
+import { useAuthStore } from "../../../store/useAuthStore";
 
 export default function UsersPage() {
   // current logged-in user (عشان نتأكد إنه admin)
-  const { user: currentUser, isLoading: isUserLoading } = useCurrentUser();
+  const { user: currentUser, isUserLoading, fetchCurrentUser } = useAuthStore();
+
+  useEffect(() => {
+    // هتتحرك مرة واحدة بس، والستور نفسه هو اللى بيمنع التكرار
+    fetchCurrentUser();
+  }, [fetchCurrentUser]);
 
   // pagination
   const [pagination, setPagination] = useState({ page: 0, pageSize: 10 });
@@ -28,10 +34,7 @@ export default function UsersPage() {
 
   const showMessage = (message, type = "success") => {
     setSnackbar({ open: true, message, type });
-    setTimeout(
-      () => setSnackbar((s) => ({ ...s, open: false })),
-      2000
-    );
+    setTimeout(() => setSnackbar((s) => ({ ...s, open: false })), 2000);
   };
 
   // delete state
@@ -124,8 +127,8 @@ export default function UsersPage() {
               snackbar.type === "success"
                 ? "bg-emerald-600"
                 : snackbar.type === "error"
-                ? "bg-red-600"
-                : "bg-slate-700"
+                  ? "bg-red-600"
+                  : "bg-slate-700"
             }`}
           >
             {snackbar.message}

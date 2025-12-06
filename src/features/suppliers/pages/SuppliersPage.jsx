@@ -1,14 +1,17 @@
 // src/features/suppliers/pages/SuppliersPage.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSuppliersData } from "../hooks/useSuppliersData";
 import SuppliersTable from "../components/SuppliersTable";
 import SupplierFormModal from "../components/SupplierFormModal";
-import { useCurrentUser } from "../../auth/hooks/useCurrentUser";
+import { useAuthStore } from "../../../store/useAuthStore";
 
 export default function SuppliersPage() {
-  const { user, isLoading: isUserLoading } = useCurrentUser();
+  const { user, isUserLoading, fetchCurrentUser } = useAuthStore();
 
-  // pagination
+  useEffect(() => {
+    fetchCurrentUser();
+  }, [fetchCurrentUser]);
+
   const [pagination, setPagination] = useState({ page: 0, pageSize: 10 });
 
   const {
@@ -55,8 +58,6 @@ export default function SuppliersPage() {
     );
   }
 
-  // في الغالب الصلاحيات هتتظبط عن طريق PermissionGate في الراوتر،
-  // بس لو حابة تتأكدي هنا كمان:
   if (
     user?.username !== "admin" &&
     !user?.suppliers_can_edit &&
@@ -149,8 +150,8 @@ export default function SuppliersPage() {
               snackbar.type === "success"
                 ? "bg-emerald-600"
                 : snackbar.type === "error"
-                ? "bg-red-600"
-                : "bg-slate-700"
+                  ? "bg-red-600"
+                  : "bg-slate-700"
             }`}
           >
             {snackbar.message}
@@ -194,9 +195,7 @@ export default function SuppliersPage() {
       <SupplierFormModal
         open={formOpen}
         mode={formMode}
-        initialValues={
-          editingSupplier || { name: "", description: "" }
-        }
+        initialValues={editingSupplier || { name: "", description: "" }}
         loading={isSaving}
         onClose={() => {
           setFormOpen(false);
@@ -244,8 +243,7 @@ export default function SuppliersPage() {
                 type="button"
                 onClick={handleConfirmDelete}
                 disabled={
-                  isDeleting ||
-                  deleteText.trim().toLowerCase() !== "نعم"
+                  isDeleting || deleteText.trim().toLowerCase() !== "نعم"
                 }
                 className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 disabled:opacity-60"
               >

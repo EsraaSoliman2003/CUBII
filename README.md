@@ -87,6 +87,22 @@ src/
  │  │     ┣ usePurchaseOrderForm.js
  │  │     ┗ useInvoicePrint.js
  │  │
+ │  ┣ manageInvoices/
+ │  │  ┣ pages/
+ │  │  │  ┗ ManageInvoicesPage.jsx
+ │  │  ┣ components/
+ │  │  │  ┣ InvoicesFilterTabs.jsx
+ │  │  │  ┣ InvoicesTable.jsx
+ │  │  │  ┣ InvoicesToolbar.jsx
+ │  │  │  ┣ InvoiceActionsCell.jsx
+ │  │  │  ┣ InvoiceStatusCell.jsx
+ │  │  │  ┣ InvoiceModal.jsx
+ │  │  │  ┗ InvoiceDetailsDialog.jsx
+ │  │  ┗ hooks/
+ │  │     ┣ useInvoicesList.js
+ │  │     ┣ useInvoiceActions.js
+ │  │     ┗ useInvoiceFilters.js
+ │  │
  │  ┣ suppliers/
  │  │  ┣ pages/
  │  │  │  ┗ SuppliersPage.jsx

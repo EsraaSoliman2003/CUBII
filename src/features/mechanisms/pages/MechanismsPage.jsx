@@ -1,12 +1,16 @@
 // src/features/mechanisms/pages/MechanismsPage.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useMechanismsData } from "../hooks/useMechanismsData";
 import MechanismsTable from "../components/MechanismsTable";
 import MechanismFormModal from "../components/MechanismFormModal";
-import { useCurrentUser } from "../../auth/hooks/useCurrentUser";
+import { useAuthStore } from "../../../store/useAuthStore";
 
 export default function MechanismsPage() {
-  const { user, isLoading: isUserLoading } = useCurrentUser();
+  const { user, isUserLoading, fetchCurrentUser } = useAuthStore();
+
+  useEffect(() => {
+    fetchCurrentUser();
+  }, [fetchCurrentUser]);
 
   const [pagination, setPagination] = useState({ page: 0, pageSize: 10 });
 
@@ -45,6 +49,7 @@ export default function MechanismsPage() {
   const [mechanismToDelete, setMechanismToDelete] = useState(null);
   const [deleteText, setDeleteText] = useState("");
 
+  // تحميل بيانات المستخدم
   if (isUserLoading) {
     return (
       <div className="h-[80vh] flex items-center justify-center">
@@ -146,8 +151,8 @@ export default function MechanismsPage() {
               snackbar.type === "success"
                 ? "bg-emerald-600"
                 : snackbar.type === "error"
-                ? "bg-red-600"
-                : "bg-slate-700"
+                  ? "bg-red-600"
+                  : "bg-slate-700"
             }`}
           >
             {snackbar.message}

@@ -1,14 +1,18 @@
 // src/features/items/pages/ItemsPage.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useItemsData } from "../hooks/useItemsData";
 import ItemsTable from "../components/ItemsTable";
 import ItemFormModal from "../components/ItemFormModal";
 import ItemDetailsModal from "../components/ItemDetailsModal";
 import ItemPriceSourcesModal from "../components/ItemPriceSourcesModal";
-import { useCurrentUser } from "../../auth/hooks/useCurrentUser";
+import { useAuthStore } from "../../../store/useAuthStore";
 
 export default function ItemsPage() {
-  const { user, isLoading: isUserLoading } = useCurrentUser();
+  const { user, isUserLoading, fetchCurrentUser } = useAuthStore();
+
+  useEffect(() => {
+    fetchCurrentUser();
+  }, [fetchCurrentUser]);
 
   const [pagination, setPagination] = useState({ page: 0, pageSize: 10 });
 
@@ -48,11 +52,12 @@ export default function ItemsPage() {
   const [priceOpen, setPriceOpen] = useState(false);
   const [priceItemId, setPriceItemId] = useState(null);
 
-  // Delete modal (بسيط)
+  // Delete modal
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [deleteText, setDeleteText] = useState("");
 
+  // تحميل بيانات المستخدم
   if (isUserLoading) {
     return (
       <div className="h-[80vh] flex items-center justify-center">
@@ -85,8 +90,6 @@ export default function ItemsPage() {
     setAddOpen(true);
   };
 
-  // src/features/items/pages/ItemsPage.jsx
-
   const handleAddSubmit = async (values) => {
     const payload = {
       item_name: values.item_name.trim(),
@@ -94,7 +97,7 @@ export default function ItemsPage() {
       locations: [
         {
           location: values.location.trim(),
-          quantity: 0, // 👈 دايماً صفر عند إنشاء منتج جديد
+          quantity: 0,
         },
       ],
     };

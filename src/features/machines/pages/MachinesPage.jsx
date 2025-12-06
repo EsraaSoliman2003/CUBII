@@ -1,12 +1,16 @@
 // src/features/machines/pages/MachinesPage.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useMachinesData } from "../hooks/useMachinesData";
 import MachinesTable from "../components/MachinesTable";
 import MachineFormModal from "../components/MachineFormModal";
-import { useCurrentUser } from "../../auth/hooks/useCurrentUser";
+import { useAuthStore } from "../../../store/useAuthStore";
 
 export default function MachinesPage() {
-  const { user, isLoading: isUserLoading } = useCurrentUser();
+  const { user, isUserLoading, fetchCurrentUser } = useAuthStore();
+
+  useEffect(() => {
+    fetchCurrentUser();
+  }, [fetchCurrentUser]);
 
   const [pagination, setPagination] = useState({ page: 0, pageSize: 10 });
 
@@ -45,6 +49,7 @@ export default function MachinesPage() {
   const [machineToDelete, setMachineToDelete] = useState(null);
   const [deleteText, setDeleteText] = useState("");
 
+  // تحميل بيانات المستخدم
   if (isUserLoading) {
     return (
       <div className="h-[80vh] flex items-center justify-center">
@@ -146,8 +151,8 @@ export default function MachinesPage() {
               snackbar.type === "success"
                 ? "bg-emerald-600"
                 : snackbar.type === "error"
-                ? "bg-red-600"
-                : "bg-slate-700"
+                  ? "bg-red-600"
+                  : "bg-slate-700"
             }`}
           >
             {snackbar.message}
@@ -213,8 +218,7 @@ export default function MachinesPage() {
             <p className="text-sm text-right mb-3">
               هل أنت متأكد من رغبتك في حذف هذه الآلة؟
               <br />
-              للاستمرار اكتب كلمة{" "}
-              <span className="font-semibold">"نعم"</span>
+              للاستمرار اكتب كلمة <span className="font-semibold">"نعم"</span>
             </p>
             <input
               type="text"

@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginRequest } from "../../../api/modules/authApi";
-import { getCurrentUser } from "../../../api/modules/usersApi";
 import { useAuthStore } from "../../../store/useAuthStore";
 import logo from "../../../assets/logo.png"; // عدّلي المسار لو محتاج
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
+  // const user = useAuthStore((state) => state.user);
 
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState("");
@@ -38,15 +38,12 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // طلب تسجيل الدخول
       const res = await loginRequest({
         username: name,
         password: password,
       });
 
       const data = res.data;
-
-      // نفس القديم: بنفترض إن الـ API بيرجع access_token
       const token = data?.access_token;
       if (!token) {
         setSnackbarMessage("لم يتم استلام التوكن من الخادم");
@@ -54,14 +51,13 @@ export default function LoginPage() {
         return;
       }
 
-      // حفظ التوكن في Zustand + localStorage
-      login(token);
+      // login فى الستور: هتخزن التوكن + تجيب اليوزر
+      await login(token);
 
-      // جلب بيانات المستخدم بعد التسجيل (بدل refetch من RTK)
-      const userRes = await getCurrentUser();
-      const updatedUser = userRes.data;
+      // بعد الـ login، نقرأ user من الستور
+      const updatedUser = useAuthStore.getState().user;
 
-      // نفس منطق التوجيه بالظبط من الكود القديم:
+      // نفس منطق التوجيه
       if (updatedUser?.username === "admin") {
         navigate("/employee");
       } else if (
@@ -81,8 +77,6 @@ export default function LoginPage() {
       ) {
         navigate("/invoices");
       } else if (updatedUser?.view_reports) {
-        // في القديم كنتِ كاتبة /others/reports
-        // خليه /reports لو الروت الجديد كده، أو عدّليه
         navigate("/reports");
       } else if (
         updatedUser?.items_can_edit ||
@@ -109,7 +103,6 @@ export default function LoginPage() {
       ) {
         navigate("/others/supliers");
       } else {
-        // fallback لو مفيش ولا صلاحية
         navigate("/login");
       }
     } catch (error) {
@@ -131,11 +124,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col md:flex-row items-center justify-center bg-slate-900 text-white px-4">
       {/* الجزء الخاص باللوجو والنص الترحيبي */}
       <div className="w-full md:w-1/2 flex flex-col items-center mb-8 md:mb-0">
-        <img
-          src={logo}
-          alt="logo"
-          className="w-32 h-auto mb-4 select-none"
-        />
+        <img src={logo} alt="logo" className="w-32 h-auto mb-4 select-none" />
         <h1 className="text-2xl md:text-3xl font-bold mb-2">
           Welcome to CUBII
         </h1>

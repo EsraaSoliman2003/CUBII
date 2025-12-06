@@ -1,6 +1,6 @@
 // src/features/invoices/hooks/useInvoiceForm.js
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { getCurrentUser } from "../../../api/modules/usersApi";
+import { useAuthStore } from "../../../store/useAuthStore";
 import {
   getLastInvoiceId,
   createInvoice as apiCreateInvoice,
@@ -40,44 +40,12 @@ export const initialInvoiceState = {
 
 export function useInvoiceForm() {
   // ========= user =========
-  const [user, setUser] = useState(null);
-  const [userLoading, setUserLoading] = useState(false);
+  const { user, isUserLoading, fetchCurrentUser } = useAuthStore();
 
+  // نجيب بيانات اليوزر أول ما الفورم تشتغل
   useEffect(() => {
-    let cancelled = false;
-
-    const fetchUser = async () => {
-      setUserLoading(true);
-
-      try {
-        const res = await getCurrentUser();
-        if (cancelled) return;
-
-        setUser(res.data);
-        setInvoice((prev) => ({
-          ...prev,
-          employee_name: res.data.username,
-        }));
-        setPurchaseOrderInvoice((prev) => ({
-          ...prev,
-          employee_name: res.data.username,
-        }));
-      } catch (err) {
-        if (cancelled) return;
-        console.error("getCurrentUser error", err);
-      } finally {
-        if (!cancelled) {
-          setUserLoading(false);
-        }
-      }
-    };
-
-    fetchUser();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    fetchCurrentUser();
+  }, [fetchCurrentUser]);
 
   // ========= last invoice id =========
   const [voucherNumber, setVoucherNumber] = useState(null);
@@ -85,8 +53,8 @@ export function useInvoiceForm() {
 
   const fetchLastId = useCallback(async () => {
     try {
-      const res = await getLastInvoiceId(); // 👈 هنا بنجيب الـ response
-      const data = res.data; // 👈 هنا بنطلع الـ data بس
+      const res = await getLastInvoiceId();
+      const data = res.data;
       setVoucherNumber(data);
       return { data };
     } catch (error) {
@@ -161,6 +129,20 @@ export function useInvoiceForm() {
       })
     );
   }, [isInvoiceSaved, isPurchaseOrderSaved]);
+
+  useEffect(() => {
+    if (!user?.username) return;
+
+    setInvoice((prev) => ({
+      ...prev,
+      employee_name: user.username,
+    }));
+
+    setPurchaseOrderInvoice((prev) => ({
+      ...prev,
+      employee_name: user.username,
+    }));
+  }, [user?.username]);
 
   const selectedNowType = useMemo(
     () => ({ type: purchasesType || operationType }),
@@ -347,8 +329,8 @@ export function useInvoiceForm() {
 
     setIsSaving(true);
     try {
-      const res = await apiCreateInvoice(payload); // 👈 هنا
-      const data = res.data; // 👈 وهنا
+      const res = await apiCreateInvoice(payload);
+      const data = res.data;
       setIsInvoiceSaved(true);
       setEditingMode(false);
       localStorage.removeItem(LOCAL_STORAGE_KEY);
@@ -356,7 +338,7 @@ export function useInvoiceForm() {
         ...prev,
         id: payload.id,
       }));
-      return data; // لو حابة ترجعي الريسبونس الحقيقي
+      return data;
     } finally {
       setIsSaving(false);
     }
@@ -379,8 +361,8 @@ export function useInvoiceForm() {
 
     setIsSaving(true);
     try {
-      const res = await apiCreateInvoice(payload); // 👈
-      const data = res.data; // 👈
+      const res = await apiCreateInvoice(payload);
+      const data = res.data;
       setIsPurchaseOrderSaved(true);
       setIsPurchaseOrderEditing(false);
       localStorage.removeItem(PURCHASE_ORDER_LOCAL_STORAGE_KEY);
@@ -408,11 +390,13 @@ export function useInvoiceForm() {
       setInvoice({
         ...initialInvoiceState,
         id: newId,
+        employee_name: user?.username || "",
       });
     } catch {
       setInvoice({
         ...initialInvoiceState,
         id: null,
+        employee_name: user?.username || "",
       });
     }
   };
@@ -430,19 +414,21 @@ export function useInvoiceForm() {
         ...initialInvoiceState,
         type: "طلب شراء",
         id: newId,
+        employee_name: user?.username || "",
       });
     } catch {
       setPurchaseOrderInvoice({
         ...initialInvoiceState,
         type: "طلب شراء",
         id: null,
+        employee_name: user?.username || "",
       });
     }
   };
 
   return {
     user,
-    userLoading,
+    userLoading: isUserLoading,
 
     voucherNumber,
     isSaving,
