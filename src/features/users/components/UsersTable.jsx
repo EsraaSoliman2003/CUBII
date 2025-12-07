@@ -57,7 +57,7 @@ export default function UsersTable({
                         className="px-2 py-1 rounded-md text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700"
                         title="عرض / تعديل"
                       >
-                        تعديل
+                        فتح
                       </button>
                       <button
                         onClick={() => onChangePassword(user.id)}
