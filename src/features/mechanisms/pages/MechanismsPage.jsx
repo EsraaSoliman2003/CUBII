@@ -1,9 +1,13 @@
 // src/features/mechanisms/pages/MechanismsPage.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useMechanismsData } from "../hooks/useMechanismsData";
 import MechanismsTable from "../components/MechanismsTable";
 import MechanismFormModal from "../components/MechanismFormModal";
 import { useAuthStore } from "../../../store/useAuthStore";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import ImportExportIcon from "@mui/icons-material/ImportExport";
+import * as XLSX from "xlsx";
+import { importMechanism } from "../../../api/modules/mechanismsApi";
 
 export default function MechanismsPage() {
   const { user, isUserLoading, fetchCurrentUser } = useAuthStore();
@@ -23,11 +27,17 @@ export default function MechanismsPage() {
     addMechanism,
     updateMechanism,
     deleteMechanism,
+    refetch,
   } = useMechanismsData({
     page: pagination.page,
     pageSize: pagination.pageSize,
   });
 
+  // استيراد من Excel
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef(null);
+
+  // Snackbar بسيط
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -141,6 +151,48 @@ export default function MechanismsPage() {
     }
   };
 
+  // فتح اختيار ملف الاستيراد
+  const handleImportClick = () => {
+    if (!user?.mechanism_can_add && user?.username !== "admin") {
+      showMessage("ليس لديك صلاحيات لإضافة عنصر", "info");
+      return;
+    }
+
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // التعامل مع ملف Excel
+  const handleImportFile = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+      await importMechanism(jsonData);
+
+      showMessage("تم استيراد الميكانيزمات بنجاح", "success");
+
+      if (typeof refetch === "function") {
+        await refetch();
+      }
+    } catch (err) {
+      console.error(err);
+      showMessage("البيانات غير متوافقة أو حدث خطأ في الاستيراد", "error");
+    } finally {
+      setIsImporting(false);
+      event.target.value = "";
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto py-8 px-4" dir="rtl">
       {/* Snackbar بسيط */}
@@ -160,19 +212,53 @@ export default function MechanismsPage() {
         </div>
       )}
 
-      {/* العنوان + زر إضافة */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
-          الميكانيزم
-        </h1>
+      {/* العنوان */}
+      <h1 className="text-2xl md:text-3xl font-bold text-slate-800 text-center">
+        الميكانيزم
+      </h1>
 
+      {/* العنوان + زر إضافة + زر استيراد (واحد يمين – واحد يسار) */}
+      <div className="flex items-center justify-between mb-6 mt-4">
+
+
+        {/* زر استيراد على أقصى يسار */}
+        <div>
+          {/* input مخفي لرفع ملف الإكسل */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            className="hidden"
+            onChange={handleImportFile}
+            disabled={isImporting}
+          />
+
+          {/* أيقونة import */}
+          <button
+            type="button"
+            onClick={handleImportClick}
+            disabled={isImporting}
+            className="inline-flex items-center justify-center rounded-full"
+          >
+            <ImportExportIcon
+              sx={{
+                fontSize: 40,
+                color: "white",
+                backgroundColor: "#4caf50",
+                padding: "8px",
+                borderRadius: "50%",
+                opacity: isImporting ? 0.6 : 1,
+              }}
+            />
+          </button>
+        </div>
+                {/* زر إضافة على أقصى يمين */}
         <button
           type="button"
           onClick={handleAddClick}
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 text-white text-sm font-semibold px-4 py-2 hover:bg-blue-700"
+          className="inline-flex items-center gap-2 rounded-lg text-white text-sm font-semibold px-4 py-2"
         >
-          <span className="text-lg">＋</span>
-          <span>إضافة ميكانيزم</span>
+          <AddCircleIcon sx={{ color: "#001473", fontSize: "50px" }} />
         </button>
       </div>
 
@@ -207,10 +293,18 @@ export default function MechanismsPage() {
 
       {/* مودال تأكيد حذف */}
       {deleteDialogOpen && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50">
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center bg-black/50"
+          onClick={() => {
+            setDeleteDialogOpen(false);
+            setMechanismToDelete(null);
+            setDeleteText("");
+          }}
+        >
           <div
             className="bg-white rounded-xl shadow-xl w-full max-w-md p-6"
             dir="rtl"
+            onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-lg font-semibold text-center text-red-600 mb-4">
               تأكيد الحذف

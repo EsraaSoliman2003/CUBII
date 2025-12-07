@@ -1,5 +1,7 @@
 // src/features/mechanisms/components/MechanismsTable.jsx
 import React from "react";
+import EditIcon from "@mui/icons-material/Edit";
+import ClearOutlinedIcon from "@mui/icons-material/ClearOutlined";
 
 export default function MechanismsTable({
   rows,
@@ -14,7 +16,7 @@ export default function MechanismsTable({
     <div className="bg-white rounded-xl shadow-md overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm" dir="rtl">
-          <thead className="bg-slate-800 text-white">
+          <thead className="bg-[#001473] text-white">
             <tr>
               <th className="px-4 py-2 text-center">#</th>
               <th className="px-4 py-2 text-center">اسم الميكانيزم</th>
@@ -50,15 +52,16 @@ export default function MechanismsTable({
                     <div className="flex items-center justify-center gap-2">
                       <button
                         onClick={() => onEdit(m)}
-                        className="px-3 py-1 rounded-md text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700"
+                        className="p-1 rounded-md hover:bg-gray-100"
                       >
-                        تعديل
+                        <EditIcon sx={{ color: "#001473" }} />
                       </button>
+
                       <button
                         onClick={() => onDelete(m)}
-                        className="px-3 py-1 rounded-md text-xs font-semibold bg-red-600 text-white hover:bg-red-700"
+                        className="p-1 rounded-md hover:bg-gray-100"
                       >
-                        حذف
+                        <ClearOutlinedIcon sx={{ color: "red" }} />
                       </button>
                     </div>
                   </td>

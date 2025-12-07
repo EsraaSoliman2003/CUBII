@@ -1,9 +1,13 @@
 // src/features/machines/pages/MachinesPage.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useMachinesData } from "../hooks/useMachinesData";
 import MachinesTable from "../components/MachinesTable";
 import MachineFormModal from "../components/MachineFormModal";
 import { useAuthStore } from "../../../store/useAuthStore";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import ImportExportIcon from "@mui/icons-material/ImportExport";
+import * as XLSX from "xlsx";
+import { importMachines } from "../../../api/modules/machinesApi";
 
 export default function MachinesPage() {
   const { user, isUserLoading, fetchCurrentUser } = useAuthStore();
@@ -23,10 +27,15 @@ export default function MachinesPage() {
     addMachine,
     updateMachine,
     deleteMachine,
+    refetch,
   } = useMachinesData({
     page: pagination.page,
     pageSize: pagination.pageSize,
   });
+
+  // استيراد من Excel
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef(null);
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -141,6 +150,48 @@ export default function MachinesPage() {
     }
   };
 
+  // فتح اختيار ملف الاستيراد
+  const handleImportClick = () => {
+    if (!user?.machines_can_add && user?.username !== "admin") {
+      showMessage("ليس لديك صلاحيات لإضافة عنصر", "info");
+      return;
+    }
+
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // التعامل مع ملف Excel
+  const handleImportFile = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+      await importMachines(jsonData);
+
+      showMessage("تم استيراد الماكينات بنجاح", "success");
+
+      if (typeof refetch === "function") {
+        await refetch();
+      }
+    } catch (err) {
+      console.error(err);
+      showMessage("البيانات غير متوافقة أو حدث خطأ في الاستيراد", "error");
+    } finally {
+      setIsImporting(false);
+      event.target.value = "";
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto py-8 px-4" dir="rtl">
       {/* Snackbar بسيط */}
@@ -160,19 +211,51 @@ export default function MachinesPage() {
         </div>
       )}
 
-      {/* العنوان + زر إضافة */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
-          الماكينات
-        </h1>
+      {/* العنوان */}
+      <h1 className="text-2xl md:text-3xl font-bold text-slate-800 text-center">
+        الماكينات
+      </h1>
 
+      {/* العنوان + زر إضافة + زر استيراد */}
+      <div className="flex items-center justify-between mb-6 mt-4">
+        {/* زر استيراد (أقصى يسار) */}
+        <div>
+          {/* input مخفي لرفع ملف الإكسل */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            className="hidden"
+            onChange={handleImportFile}
+            disabled={isImporting}
+          />
+
+          {/* أيقونة import */}
+          <button
+            type="button"
+            onClick={handleImportClick}
+            disabled={isImporting}
+            className="inline-flex items-center justify-center rounded-full"
+          >
+            <ImportExportIcon
+              sx={{
+                fontSize: 40,
+                color: "white",
+                backgroundColor: "#4caf50",
+                padding: "8px",
+                borderRadius: "50%",
+                opacity: isImporting ? 0.6 : 1,
+              }}
+            />
+          </button>
+        </div>
+        {/* زر إضافة (أقصى يمين) */}
         <button
           type="button"
           onClick={handleAddClick}
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 text-white text-sm font-semibold px-4 py-2 hover:bg-blue-700"
+          className="inline-flex items-center gap-2 rounded-lg text-white text-sm font-semibold px-4 py-2"
         >
-          <span className="text-lg">＋</span>
-          <span>إضافة ماكينة</span>
+          <AddCircleIcon sx={{ color: "#001473", fontSize: "50px" }} />
         </button>
       </div>
 
@@ -207,10 +290,18 @@ export default function MachinesPage() {
 
       {/* مودال تأكيد حذف */}
       {deleteDialogOpen && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50">
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center bg-black/50"
+          onClick={() => {
+            setDeleteDialogOpen(false);
+            setMachineToDelete(null);
+            setDeleteText("");
+          }}
+        >
           <div
             className="bg-white rounded-xl shadow-xl w-full max-w-md p-6"
             dir="rtl"
+            onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-lg font-semibold text-center text-red-600 mb-4">
               تأكيد الحذف

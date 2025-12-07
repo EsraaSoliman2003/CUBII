@@ -37,10 +37,14 @@ export default function MachineFormModal({
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50">
+    <div
+      className="fixed inset-0 z-40 flex items-center justify-center bg-black/50"
+      onClick={onClose} // يغلق عند الضغط خارج المودال
+    >
       <div
         className="bg-white rounded-xl shadow-xl w-full max-w-md p-6"
         dir="rtl"
+        onClick={(e) => e.stopPropagation()} // يمنع الغلق عند الضغط داخل المودال
       >
         <h2 className="text-lg font-semibold text-center mb-4">
           {mode === "add" ? "إضافة ماكينة جديدة" : "تعديل الماكينة"}
