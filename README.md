@@ -141,12 +141,15 @@ src/
  │  │  ┗ hooks/
  │  │     ┗ useMechanismsData.js
  │  │
- │  ┣ reports/
- │  │  ┣ pages/
- │  │  │  ┗ ReportsPage.jsx
- │  │  ┗ components/
- │  │     ┣ ReportsFilterForm.jsx
- │  │     ┗ ReportsTable.jsx
+ │  ┗ reports/
+ │     ┣ pages/
+ │     │  ┗ ReportsPage.jsx
+ │     ┣ hooks/
+ │     │  ┗ useReportsLogic.js
+ │     ┗ components/
+ │        ┣ ReportsResults.jsx
+ │        ┣ ReportsFilterForm.jsx
+ │        ┗ ReportsTable.jsx
  │
  ┣ components/
  │  ┗ common/
