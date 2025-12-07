@@ -1,7 +1,5 @@
-import React, { useState, useMemo } from "react";
-import {
-  addUser as addUserApi,
-} from "../../../api/modules/usersApi";
+import React, { useState } from "react";
+import { addUser as addUserApi } from "../../../api/modules/usersApi";
 import {
   JOBS,
   CREATE_INVOICE_OPTIONS,
@@ -11,6 +9,8 @@ import {
   MECHANISM_OPTIONS,
   SUPPLIERS_OPTIONS,
 } from "../constants/permissions";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Close";
 
 function buildFlags(options) {
   return Object.keys(options).reduce((acc, key) => {
@@ -150,10 +150,7 @@ export default function AddUserModal({ open, onClose, onCreated, onMessage }) {
 
       if (apiMessage === "Username already exists") {
         setErrors((prev) => ({ ...prev, username: "الاسم غير متاح" }));
-        onMessage?.(
-          "اسم المستخدم موجود بالفعل. يرجى اختيار اسم آخر",
-          "info"
-        );
+        onMessage?.("اسم المستخدم موجود بالفعل. يرجى اختيار اسم آخر", "info");
       } else {
         onMessage?.("فشل التسجيل. يرجى المحاولة مرة أخرى.", "error");
       }
@@ -162,24 +159,25 @@ export default function AddUserModal({ open, onClose, onCreated, onMessage }) {
     }
   };
 
+  const handleBackdropClick = () => {
+    onClose?.();
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      onClick={handleBackdropClick} // إغلاق عند الضغط على الخلفية
+    >
       <div
         className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col"
         dir="rtl"
+        onClick={(e) => e.stopPropagation()} // منع الإغلاق عند الضغط داخل الكارت
       >
         {/* Header */}
         <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between bg-slate-50">
           <h2 className="text-lg font-semibold text-slate-800">
             إضافة موظف جديد
           </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-8 w-8 flex items-center justify-center rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 text-lg leading-none"
-          >
-            ×
-          </button>
         </div>
 
         {/* Body */}
@@ -209,9 +207,7 @@ export default function AddUserModal({ open, onClose, onCreated, onMessage }) {
                   }`}
                 />
                 {errors.username && (
-                  <p className="text-xs text-red-600 mt-1">
-                    {errors.username}
-                  </p>
+                  <p className="text-xs text-red-600 mt-1">{errors.username}</p>
                 )}
               </div>
 
@@ -253,9 +249,7 @@ export default function AddUserModal({ open, onClose, onCreated, onMessage }) {
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="text-xs text-red-600 mt-1">
-                    {errors.password}
-                  </p>
+                  <p className="text-xs text-red-600 mt-1">{errors.password}</p>
                 )}
               </div>
 
@@ -373,22 +367,29 @@ export default function AddUserModal({ open, onClose, onCreated, onMessage }) {
 
         {/* Footer */}
         <div className="px-4 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+          {/* إلغاء */}
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-lg border border-slate-300 text-sm text-slate-700 hover:bg-slate-100"
+            className="inline-flex items-center gap-1 px-4 py-2 rounded-lg border border-slate-300 text-sm text-slate-700 hover:bg-slate-100"
+            title="إلغاء"
           >
-            إلغاء
+            <CancelIcon className="w-4 h-4" />
+            <span>إلغاء</span>
           </button>
+
+          {/* حفظ / إضافة */}
           <button
             type="submit"
-            form="__"
             onClick={handleSubmit}
             disabled={submitting}
             className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold disabled:opacity-60"
+            title="حفظ"
           >
-            {submitting && (
+            {submitting ? (
               <span className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <SaveIcon className="w-4 h-4" />
             )}
             <span>{submitting ? "جاري الحفظ..." : "إضافة الموظف"}</span>
           </button>

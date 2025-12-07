@@ -1,4 +1,7 @@
 import React from "react";
+import ClearOutlinedIcon from "@mui/icons-material/ClearOutlined";
+import LaunchIcon from "@mui/icons-material/Launch";
+import PasswordIcon from "@mui/icons-material/Password";
 
 export default function UsersTable({
   rows,
@@ -14,7 +17,10 @@ export default function UsersTable({
     <div className="bg-white rounded-xl shadow-md overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm" dir="rtl">
-          <thead className="bg-slate-800 text-white">
+          <thead
+            className="bg-primary
+           text-white"
+          >
             <tr>
               <th className="px-4 py-2 text-center">#</th>
               <th className="px-4 py-2 text-center">الاسم</th>
@@ -52,26 +58,33 @@ export default function UsersTable({
                   </td>
                   <td className="px-4 py-2 text-center">
                     <div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => onEdit(user.id)}
-                        className="px-2 py-1 rounded-md text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700"
-                        title="عرض / تعديل"
-                      >
-                        فتح
-                      </button>
-                      <button
-                        onClick={() => onChangePassword(user.id)}
-                        className="px-2 py-1 rounded-md text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700"
-                        title="تغيير كلمة السر"
-                      >
-                        كلمة السر
-                      </button>
+                      {/* حذف */}
                       <button
                         onClick={() => onDelete(user.id)}
-                        className="px-2 py-1 rounded-md text-xs font-semibold bg-red-600 text-white hover:bg-red-700"
+                        className="inline-flex items-center justify-center p-1 rounded-md bg-transparent hover:bg-red-100 transition"
                         title="حذف"
                       >
-                        حذف
+                        <ClearOutlinedIcon
+                          sx={{ color: "#dc2626", fontSize: 20 }}
+                        />
+                      </button>
+
+                      {/* تغيير كلمة السر */}
+                      <button
+                        onClick={() => onChangePassword(user.id)}
+                        className="inline-flex items-center justify-center p-1 rounded-md bg-transparent hover:bg-indigo-100 transition"
+                        title="تغيير كلمة السر"
+                      >
+                        <PasswordIcon sx={{ color: "#4f46e5", fontSize: 20 }} />
+                      </button>
+
+                      {/* تعديل / عرض */}
+                      <button
+                        onClick={() => onEdit(user.id)}
+                        className="inline-flex items-center justify-center p-1 rounded-md bg-transparent hover:bg-blue-100 transition"
+                        title="عرض / تعديل"
+                      >
+                        <LaunchIcon sx={{ color: "#2563eb", fontSize: 20 }} />
                       </button>
                     </div>
                   </td>

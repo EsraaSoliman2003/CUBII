@@ -9,6 +9,9 @@ import {
   MECHANISM_OPTIONS,
   SUPPLIERS_OPTIONS,
 } from "../constants/permissions";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Close";
+import EditIcon from "@mui/icons-material/Edit";
 
 function PermissionGroup({ label, options, values = {}, onChange, disabled }) {
   return (
@@ -92,7 +95,13 @@ function transformUser(user) {
   };
 }
 
-export default function EditUserModal({ open, onClose, user, onUpdated, onMessage }) {
+export default function EditUserModal({
+  open,
+  onClose,
+  user,
+  onUpdated,
+  onMessage,
+}) {
   const [editing, setEditing] = useState(false);
   const [formUser, setFormUser] = useState(() => transformUser(user));
   const [loading, setLoading] = useState(false);
@@ -185,48 +194,68 @@ export default function EditUserModal({ open, onClose, user, onUpdated, onMessag
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-y-auto p-5" dir="rtl">
+    <div
+      className="fixed inset-0 z-40 flex items-center justify-center bg-black/40"
+      onClick={closeAll} // إغلاق عند الضغط على الخلفية
+    >
+      <div
+        className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-y-auto p-5"
+        dir="rtl"
+        onClick={(e) => e.stopPropagation()} // منع الإغلاق عند الضغط داخل الكارت
+      >
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold text-slate-800">
-            بيانات الموظف
-          </h2>
+          <h2 className="text-lg font-bold text-slate-800">بيانات الموظف</h2>
 
           <div className="flex gap-2">
             {editing ? (
               <>
+                {/* حفظ */}
                 <button
                   onClick={handleSave}
                   disabled={loading}
-                  className="px-3 py-1 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60"
+                  className="
+                    inline-flex items-center justify-center 
+                    p-1.5 rounded-full bg-transparent 
+                    hover:bg-blue-50 transition disabled:opacity-60
+                  "
+                  title="حفظ التعديلات"
                 >
-                  {loading ? "جارٍ الحفظ..." : "حفظ"}
+                  {loading ? (
+                    <span className="inline-block h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <SaveIcon sx={{ fontSize: 22, color: "#2563eb" }} />
+                  )}
                 </button>
+
+                {/* إلغاء */}
                 <button
                   onClick={() => {
                     setFormUser(transformUser(user));
                     setEditing(false);
                   }}
-                  className="px-3 py-1 rounded-lg text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-gray-100"
+                  className="
+                    inline-flex items-center justify-center 
+                    p-1.5 rounded-full bg-transparent 
+                    hover:bg-gray-100 transition
+                  "
+                  title="إلغاء التعديل"
                 >
-                  إلغاء التعديل
+                  <CancelIcon sx={{ fontSize: 22, color: "#6b7280" }} />
                 </button>
               </>
             ) : (
               <button
                 onClick={() => setEditing(true)}
-                className="px-3 py-1 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700"
+                className="
+                  inline-flex items-center justify-center 
+                  p-1.5 rounded-full bg-transparent 
+                  hover:bg-blue-50 transition
+                "
+                title="تعديل"
               >
-                تعديل
+                <EditIcon sx={{ fontSize: 22, color: "#2563eb" }} />
               </button>
             )}
-
-            <button
-              onClick={closeAll}
-              className="px-3 py-1 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700"
-            >
-              إغلاق
-            </button>
           </div>
         </div>
 
@@ -239,11 +268,14 @@ export default function EditUserModal({ open, onClose, user, onUpdated, onMessag
             <input
               value={formUser.username}
               onChange={(e) =>
-                editing && setFormUser((prev) => ({ ...prev, username: e.target.value }))
+                editing &&
+                setFormUser((prev) => ({ ...prev, username: e.target.value }))
               }
               disabled={!editing}
               className={`flex-1 w-full border rounded-lg px-3 py-2 text-sm text-right focus:outline-none focus:ring-2 ${
-                editing ? "border-blue-500 focus:ring-blue-500" : "border-gray-300 bg-gray-100"
+                editing
+                  ? "border-blue-500 focus:ring-blue-500"
+                  : "border-gray-300 bg-gray-100"
               }`}
             />
           </div>
@@ -255,11 +287,14 @@ export default function EditUserModal({ open, onClose, user, onUpdated, onMessag
             <select
               value={formUser.job_name || ""}
               onChange={(e) =>
-                editing && setFormUser((prev) => ({ ...prev, job_name: e.target.value }))
+                editing &&
+                setFormUser((prev) => ({ ...prev, job_name: e.target.value }))
               }
               disabled={!editing}
               className={`flex-1 w-full border rounded-lg px-3 py-2 text-sm text-right focus:outline-none focus:ring-2 ${
-                editing ? "border-blue-500 focus:ring-blue-500" : "border-gray-300 bg-gray-100"
+                editing
+                  ? "border-blue-500 focus:ring-blue-500"
+                  : "border-gray-300 bg-gray-100"
               }`}
             >
               <option value="">-- اختر الوظيفة --</option>
@@ -278,11 +313,17 @@ export default function EditUserModal({ open, onClose, user, onUpdated, onMessag
             <input
               value={formUser.phone_number || ""}
               onChange={(e) =>
-                editing && setFormUser((prev) => ({ ...prev, phone_number: e.target.value }))
+                editing &&
+                setFormUser((prev) => ({
+                  ...prev,
+                  phone_number: e.target.value,
+                }))
               }
               disabled={!editing}
               className={`flex-1 w-full border rounded-lg px-3 py-2 text-sm text-right focus:outline-none focus:ring-2 ${
-                editing ? "border-blue-500 focus:ring-blue-500" : "border-gray-300 bg-gray-100"
+                editing
+                  ? "border-blue-500 focus:ring-blue-500"
+                  : "border-gray-300 bg-gray-100"
               }`}
             />
           </div>
@@ -319,9 +360,7 @@ export default function EditUserModal({ open, onClose, user, onUpdated, onMessag
             options={ITEM_OPTIONS}
             values={formUser.permissions.items}
             disabled={!editing}
-            onChange={(key, value) =>
-              handleChangePerm("items", key, value)
-            }
+            onChange={(key, value) => handleChangePerm("items", key, value)}
           />
 
           <PermissionGroup
@@ -329,9 +368,7 @@ export default function EditUserModal({ open, onClose, user, onUpdated, onMessag
             options={MACHINES_OPTIONS}
             values={formUser.permissions.machines}
             disabled={!editing}
-            onChange={(key, value) =>
-              handleChangePerm("machines", key, value)
-            }
+            onChange={(key, value) => handleChangePerm("machines", key, value)}
           />
 
           <PermissionGroup
@@ -339,9 +376,7 @@ export default function EditUserModal({ open, onClose, user, onUpdated, onMessag
             options={MECHANISM_OPTIONS}
             values={formUser.permissions.mechanism}
             disabled={!editing}
-            onChange={(key, value) =>
-              handleChangePerm("mechanism", key, value)
-            }
+            onChange={(key, value) => handleChangePerm("mechanism", key, value)}
           />
 
           <PermissionGroup
@@ -349,9 +384,7 @@ export default function EditUserModal({ open, onClose, user, onUpdated, onMessag
             options={SUPPLIERS_OPTIONS}
             values={formUser.permissions.suppliers}
             disabled={!editing}
-            onChange={(key, value) =>
-              handleChangePerm("suppliers", key, value)
-            }
+            onChange={(key, value) => handleChangePerm("suppliers", key, value)}
           />
         </div>
       </div>

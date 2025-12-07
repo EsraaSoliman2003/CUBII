@@ -6,6 +6,7 @@ import ChangePasswordModal from "../components/ChangePasswordModal";
 import ConfirmDeleteModal from "../../../components/common/ConfirmDeleteModal";
 import { useAuthStore } from "../../../store/useAuthStore";
 import AddUserModal from "../components/AddUserModal";
+import GroupAddIcon from "@mui/icons-material/GroupAdd";
 
 export default function UsersPage() {
   const [addOpen, setAddOpen] = useState(false);
@@ -138,23 +139,19 @@ export default function UsersPage() {
         </div>
       )}
 
-      <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-4">
+      <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-4 text-center">
         بيانات الموظفين
       </h1>
 
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-6">
-        <p className="text-sm text-slate-600">
-          يمكنك إدارة بيانات الموظفين من الجدول التالي، وإضافة موظفين جدد حسب
-          الصلاحيات.
-        </p>
+        <p className="text-sm text-slate-600"></p>
 
         <button
           type="button"
           onClick={() => setAddOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-sm"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-white text-sm font-semibold"
         >
-          <span className="text-lg leading-none">＋</span>
-          <span>إضافة موظف جديد</span>
+          <GroupAddIcon sx={{ color: "#001473", fontSize: "3rem" }} />
         </button>
       </div>
 

@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 import { changePassword } from "../../../api/modules/usersApi";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
-export default function ChangePasswordModal({ open, onClose, userId, onSuccess }) {
+export default function ChangePasswordModal({
+  open,
+  onClose,
+  userId,
+  onSuccess,
+}) {
   const [newPassword, setNewPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
@@ -49,13 +55,21 @@ export default function ChangePasswordModal({ open, onClose, userId, onSuccess }
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-5" dir="rtl">
+    <div
+      className="fixed inset-0 z-40 flex items-center justify-center bg-black/40"
+      onClick={closeAll} // إغلاق عند الضغط على الخلفية
+    >
+      <div
+        className="bg-white rounded-xl shadow-xl w-full max-w-md p-5"
+        dir="rtl"
+        onClick={(e) => e.stopPropagation()} // منع إغلاق عند الضغط داخل الكارت
+      >
         <h2 className="text-center text-lg font-bold text-slate-800 mb-4">
           تغيير كلمة المرور
         </h2>
 
         <div className="space-y-4">
+          {/* كلمة المرور الجديدة */}
           <div>
             <label className="block text-sm font-semibold mb-1">
               كلمة المرور الجديدة
@@ -66,19 +80,35 @@ export default function ChangePasswordModal({ open, onClose, userId, onSuccess }
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 className={`w-full border rounded-lg px-3 py-2 text-sm text-right focus:outline-none focus:ring-2 ${
-                  error ? "border-red-400 focus:ring-red-400" : "border-gray-300 focus:ring-blue-500"
+                  error
+                    ? "border-red-400 focus:ring-red-400"
+                    : "border-gray-300 focus:ring-blue-500"
                 }`}
               />
+
+              {/* أيقونة إظهار/إخفاء */}
               <button
                 type="button"
                 onClick={() => setShowNew((p) => !p)}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-600"
+                className="
+                  absolute left-3 top-1/2 -translate-y-1/2
+                  flex items-center justify-center
+                  w-7 h-7
+                  rounded-full bg-transparent
+                  hover:bg-gray-100/70 transition
+                  outline-none border-none
+                "
               >
-                {showNew ? "إخفاء" : "عرض"}
+                {showNew ? (
+                  <VisibilityOff sx={{ color: "#6b7280", fontSize: 20 }} />
+                ) : (
+                  <Visibility sx={{ color: "#6b7280", fontSize: 20 }} />
+                )}
               </button>
             </div>
           </div>
 
+          {/* تأكيد كلمة المرور */}
           <div>
             <label className="block text-sm font-semibold mb-1">
               تأكيد كلمة المرور
@@ -89,22 +119,34 @@ export default function ChangePasswordModal({ open, onClose, userId, onSuccess }
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 className={`w-full border rounded-lg px-3 py-2 text-sm text-right focus:outline-none focus:ring-2 ${
-                  error ? "border-red-400 focus:ring-red-400" : "border-gray-300 focus:ring-blue-500"
+                  error
+                    ? "border-red-400 focus:ring-red-400"
+                    : "border-gray-300 focus:ring-blue-500"
                 }`}
               />
+
               <button
                 type="button"
                 onClick={() => setShowConfirm((p) => !p)}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-600"
+                className="
+                  absolute left-3 top-1/2 -translate-y-1/2
+                  flex items-center justify-center
+                  w-7 h-7
+                  rounded-full bg-transparent
+                  hover:bg-gray-100/70 transition
+                  outline-none border-none
+                "
               >
-                {showConfirm ? "إخفاء" : "عرض"}
+                {showConfirm ? (
+                  <VisibilityOff sx={{ color: "#6b7280", fontSize: 20 }} />
+                ) : (
+                  <Visibility sx={{ color: "#6b7280", fontSize: 20 }} />
+                )}
               </button>
             </div>
           </div>
 
-          {error && (
-            <p className="text-xs text-red-500 text-right">{error}</p>
-          )}
+          {error && <p className="text-xs text-red-500 text-right">{error}</p>}
         </div>
 
         <div className="mt-6 flex justify-between gap-3">

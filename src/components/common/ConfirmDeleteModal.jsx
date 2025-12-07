@@ -25,9 +25,21 @@ export default function ConfirmDeleteModal({
     onConfirm();
   };
 
+  const handleBackdropClick = () => {
+    setConfirmationText("");
+    onClose();
+  };
+
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-5" dir="rtl">
+    <div
+      className="fixed inset-0 z-40 flex items-center justify-center bg-black/40"
+      onClick={handleBackdropClick} // إغلاق عند الضغط على الخلفية
+    >
+      <div
+        className="bg-white rounded-xl shadow-xl w-full max-w-lg p-5"
+        dir="rtl"
+        onClick={(e) => e.stopPropagation()} // منع الإغلاق عند الضغط داخل الكارت
+      >
         <h2 className="text-center text-lg font-bold text-red-600 mb-4">
           {loading ? "جاري الحذف..." : "تأكيد الحذف"}
         </h2>
@@ -69,10 +81,7 @@ export default function ConfirmDeleteModal({
                 تأكيد
               </button>
               <button
-                onClick={() => {
-                  setConfirmationText("");
-                  onClose();
-                }}
+                onClick={handleBackdropClick}
                 className="flex-1 inline-flex justify-center px-4 py-2 rounded-lg text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
               >
                 إغلاق
