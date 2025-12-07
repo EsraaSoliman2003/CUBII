@@ -170,8 +170,8 @@ const ManageInvoicesPage = () => {
             alert.type === "success"
               ? "bg-green-50 border-green-400 text-green-700"
               : alert.type === "warning"
-              ? "bg-yellow-50 border-yellow-400 text-yellow-700"
-              : "bg-red-50 border-red-400 text-red-700"
+                ? "bg-yellow-50 border-yellow-400 text-yellow-700"
+                : "bg-red-50 border-red-400 text-red-700"
           }`}
         >
           <div className="flex justify-between items-center">
@@ -250,9 +250,9 @@ const ManageInvoicesPage = () => {
           open={isInvoiceModalOpen}
           onClose={closeInvoiceModal}
           invoice={selectedInvoice}
+          user={user}
         />
       )}
-
 
       {/* Details dialog */}
       {isDetailsOpen && detailsInvoiceId && (
@@ -260,6 +260,7 @@ const ManageInvoicesPage = () => {
           open={isDetailsOpen}
           onClose={closeDetails}
           invoiceId={detailsInvoiceId}
+          user={user}
         />
       )}
     </div>

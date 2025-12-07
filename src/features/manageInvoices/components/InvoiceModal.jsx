@@ -8,7 +8,7 @@ import {
 import InvoiceLayout from "../../invoices/components/InvoiceLayout";
 import SnackBar from "../../../components/common/SnackBar";
 
-export default function InvoiceModal({ open, onClose, invoice }) {
+export default function InvoiceModal({ open, onClose, invoice, user }) {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -260,6 +260,7 @@ export default function InvoiceModal({ open, onClose, invoice }) {
   }
 
   const isDeposit = selectedInvoice?.type === "أمانات";
+  const canViewPrices = user?.view_prices || user?.username === "admin";
 
   return (
     <>
@@ -340,6 +341,7 @@ export default function InvoiceModal({ open, onClose, invoice }) {
               isCreate={false}
               canEsterdad={isDeposit}
               setSelectedInvoice={setSelectedInvoice}
+              canViewPrices={canViewPrices}
             />
           )}
         </div>

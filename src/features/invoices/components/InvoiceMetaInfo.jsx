@@ -14,6 +14,7 @@ export default function InvoiceMetaInfo({
   selectedNowType,
   justEditUnitPrice = false,
   canEsterdad = false,
+  canViewPrices = false,
 }) {
   const isReturnType =
     selectedNowType?.type === "مرتجع" ||
@@ -90,10 +91,7 @@ export default function InvoiceMetaInfo({
 
   return (
     <>
-      <div
-        className="mt-3 border border-gray-300 rounded-md"
-        dir="rtl"
-      >
+      <div className="mt-3 border border-gray-300 rounded-md" dir="rtl">
         <table className="w-full text-sm">
           <tbody>
             {isReturnType && (
@@ -184,6 +182,7 @@ export default function InvoiceMetaInfo({
         onClose={() => setOpenOriginalModal(false)}
         invoiceId={selectedInvoiceId}
         canEsterdad={canEsterdad}
+        canViewPrices={canViewPrices}
       />
     </>
   );

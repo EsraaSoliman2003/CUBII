@@ -8,6 +8,7 @@ export default function OriginalInvoiceDialog({
   onClose,
   invoiceId,
   canEsterdad = false,
+  canViewPrices = false,
 }) {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -100,6 +101,7 @@ export default function OriginalInvoiceDialog({
             showCommentField
             isCreate={false}
             canEsterdad={canEsterdad}
+            canViewPrices={canViewPrices}
           />
         )}
       </div>

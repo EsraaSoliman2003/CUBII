@@ -6,11 +6,18 @@ import {
   returnWarrantyInvoicePartially,
 } from "../../../api/modules/invoicesApi";
 import InvoiceLayout from "../components/InvoiceLayout";
+import { useAuthStore } from "../../../store/useAuthStore";
 
 export default function ViewInvoicePage() {
   const { id } = useParams();
   const [invoice, setInvoice] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { user, isUserLoading, fetchCurrentUser } = useAuthStore();
+
+  useEffect(() => {
+    fetchCurrentUser();
+  }, [fetchCurrentUser]);
 
   // تحميل الفاتورة
   useEffect(() => {
@@ -107,7 +114,7 @@ export default function ViewInvoicePage() {
     };
   }, [invoice?.id, invoice?.type]);
 
-  if (isLoading || !invoice) {
+  if (isLoading || isUserLoading || !invoice) {
     return (
       <div className="w-full h-[60vh] flex items-center justify-center">
         <div className="h-8 w-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -116,6 +123,7 @@ export default function ViewInvoicePage() {
   }
 
   const isAmanat = invoice.type === "أمانات";
+  const canViewPrices = user?.view_prices || user?.username === "admin";
 
   return (
     <div className="w-[90%] mx-auto mt-10 mb-10" dir="rtl">
@@ -132,6 +140,7 @@ export default function ViewInvoicePage() {
         isCreate={false}
         canEsterdad={isAmanat}
         setSelectedInvoice={setInvoice}
+        canViewPrices={canViewPrices}
       />
     </div>
   );

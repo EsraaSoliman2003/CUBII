@@ -43,6 +43,9 @@ export default function CreateInvoicePage() {
     isSaving,
   } = useInvoiceForm();
 
+  // ✅ هنا بنحدد هل يقدر يشوف الأسعار ولا لا
+  const canViewPrices = user?.view_prices || user?.username === "admin";
+
   // ✅ Hooks لازم تكون برا أي if
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -181,6 +184,7 @@ export default function CreateInvoicePage() {
             isPurchasesType={!!purchasesType}
             showCommentField={showCommentField}
             isCreate
+            canViewPrices={canViewPrices}
           />
 
           <div className="mt-4 flex flex-wrap justify-between gap-3">
@@ -258,6 +262,7 @@ export default function CreateInvoicePage() {
               isPurchasesType={false}
               showCommentField={showPurchaseOrderCommentField}
               isCreate
+              canViewPrices={canViewPrices}
             />
 
             <div className="mt-4 flex flex-wrap justify-between gap-3">
@@ -310,9 +315,7 @@ export default function CreateInvoicePage() {
                   <button
                     type="button"
                     className="px-4 py-2 rounded-lg text-sm font-semibold flex-1 min-w-[120px] bg-green-600 text-white"
-                    onClick={() =>
-                      handlePrint("printable-purchase-order")
-                    }
+                    onClick={() => handlePrint("printable-purchase-order")}
                   >
                     طباعة الطلب
                   </button>

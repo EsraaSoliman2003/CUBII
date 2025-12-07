@@ -22,6 +22,7 @@ export default function InvoiceLayout({
   justEditUnitPrice = false,
   canEsterdad = false,
   setSelectedInvoice,
+  canViewPrices = false,
 }) {
   return (
     <div
@@ -40,6 +41,7 @@ export default function InvoiceLayout({
         selectedNowType={selectedNowType}
         justEditUnitPrice={justEditUnitPrice}
         canEsterdad={canEsterdad}
+        canViewPrices={canViewPrices}
       />
 
       <InvoiceItemsTable
@@ -55,16 +57,18 @@ export default function InvoiceLayout({
         justEditUnitPrice={justEditUnitPrice}
         canEsterdad={canEsterdad}
         setSelectedInvoice={setSelectedInvoice}
+        canViewPrices={canViewPrices}
       />
 
-      {(isPurchasesType || selectedInvoice.type === "اضافه") && (
-        <InvoiceMoneySummary
-          selectedInvoice={selectedInvoice}
-          editingInvoice={editingInvoice}
-          setEditingInvoice={setEditingInvoice}
-          isEditing={isEditing}
-        />
-      )}
+      {canViewPrices &&
+        (isPurchasesType || selectedInvoice.type === "اضافه") && (
+          <InvoiceMoneySummary
+            selectedInvoice={selectedInvoice}
+            editingInvoice={editingInvoice}
+            setEditingInvoice={setEditingInvoice}
+            isEditing={isEditing}
+          />
+        )}
 
       <InvoiceComment
         selectedInvoice={selectedInvoice}

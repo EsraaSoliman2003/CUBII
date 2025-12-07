@@ -20,6 +20,8 @@ export default function InvoiceItemsTable({
   justEditUnitPrice = false,
   canEsterdad = false,
   setSelectedInvoice,
+  canViewPrices = false,
+  isCreate = false,
 }) {
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -308,7 +310,7 @@ export default function InvoiceItemsTable({
                   الموقع الجديد
                 </th>
               )}
-              {(isPurchasesType || isAdditionType) && (
+              {canViewPrices && ((isCreate && isAdditionType) || !isCreate) && (
                 <>
                   <th className="border border-gray-300 px-2 py-1">السعر</th>
                   <th className="border border-gray-300 px-2 py-1">
@@ -442,7 +444,7 @@ export default function InvoiceItemsTable({
                   <td className="border border-gray-300 px-2 py-1 min-w-[180px]">
                     {isEditing && !justEditUnitPrice ? (
                       <CustomAutoCompleteField
-                      // isLoading={row.item_name === "" ? false : true}
+                        // isLoading={row.item_name === "" ? false : true}
                         values={row.availableLocations || []}
                         editingItem={row}
                         fieldName="location"
@@ -503,7 +505,7 @@ export default function InvoiceItemsTable({
                     <td className="border border-gray-300 px-2 py-1 min-w-[180px]">
                       {isEditing && !justEditUnitPrice ? (
                         <CustomAutoCompleteField
-                        // isLoading={row.item_name === "" ? false : true}
+                          // isLoading={row.item_name === "" ? false : true}
                           values={(row.availableLocations || []).filter(
                             (l) => l.location !== row.location
                           )}
@@ -529,47 +531,48 @@ export default function InvoiceItemsTable({
                   )}
 
                   {/* price + total */}
-                  {(isPurchasesType || isAdditionType) && (
-                    <>
-                      <td className="border border-gray-300 px-1 py-1 w-24 text-center">
-                        {isEditing && isAdditionType ? (
-                          <NumberInput
-                            value={row.unit_price}
-                            className="w-full h-8 text-center text-sm border-0"
-                            onClick={(e) => {
-                              if (!row.location) {
-                                setSnackbar({
-                                  open: true,
-                                  message: "يجب تحديد موقع العنصر أولا",
-                                  type: "info",
-                                });
-                                e.target.blur();
-                              }
-                            }}
-                            onChange={(e) => {
-                              if (!row.location) {
-                                setSnackbar({
-                                  open: true,
-                                  message: "يجب تحديد موقع العنصر أولا",
-                                  type: "info",
-                                });
-                                e.target.blur();
-                                return;
-                              }
-                              handleChangeUnitPrice(index, e.target.value);
-                            }}
-                          />
-                        ) : (
-                          <span>{row.unit_price}</span>
-                        )}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1 text-center">
-                        {isEditing && !justEditUnitPrice && !isAdditionType
-                          ? "-"
-                          : row.total_price}
-                      </td>
-                    </>
-                  )}
+                  {canViewPrices &&
+                    ((isCreate && isAdditionType) || !isCreate) && (
+                      <>
+                        <td className="border border-gray-300 px-1 py-1 w-24 text-center">
+                          {isEditing && isAdditionType ? (
+                            <NumberInput
+                              value={row.unit_price}
+                              className="w-full h-8 text-center text-sm border-0"
+                              onClick={(e) => {
+                                if (!row.location) {
+                                  setSnackbar({
+                                    open: true,
+                                    message: "يجب تحديد موقع العنصر أولا",
+                                    type: "info",
+                                  });
+                                  e.target.blur();
+                                }
+                              }}
+                              onChange={(e) => {
+                                if (!row.location) {
+                                  setSnackbar({
+                                    open: true,
+                                    message: "يجب تحديد موقع العنصر أولا",
+                                    type: "info",
+                                  });
+                                  e.target.blur();
+                                  return;
+                                }
+                                handleChangeUnitPrice(index, e.target.value);
+                              }}
+                            />
+                          ) : (
+                            <span>{row.unit_price}</span>
+                          )}
+                        </td>
+                        <td className="border border-gray-300 px-2 py-1 text-center">
+                          {isEditing && !justEditUnitPrice && !isAdditionType
+                            ? "-"
+                            : row.total_price}
+                        </td>
+                      </>
+                    )}
 
                   {/* description */}
                   <td className="border border-gray-300 px-2 py-1 max-w-xs">

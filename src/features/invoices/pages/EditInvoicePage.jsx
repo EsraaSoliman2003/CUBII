@@ -7,9 +7,11 @@ import {
 } from "../../../api/modules/invoicesApi";
 import InvoiceLayout from "../components/InvoiceLayout";
 import SnackBar from "../../../components/common/SnackBar";
+import { useAuthStore } from "../../../store/useAuthStore";
 
 export default function EditInvoicePage() {
   const { id } = useParams();
+  const { user, isUserLoading, fetchCurrentUser } = useAuthStore();
 
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -59,13 +61,15 @@ export default function EditInvoicePage() {
     };
   }, [id]);
 
-  if (isLoading || !editingInvoice) {
+  if (isLoading || isUserLoading || !editingInvoice) {
     return (
       <div className="w-full h-[60vh] flex items-center justify-center">
         <div className="h-8 w-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
+
+  const canViewPrices = user?.view_prices || user?.username === "admin";
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -124,6 +128,7 @@ export default function EditInvoicePage() {
         isCreate={false}
         canEsterdad={false}
         setSelectedInvoice={undefined}
+        canViewPrices={canViewPrices}
       />
 
       <div className="mt-4 flex justify-center">
