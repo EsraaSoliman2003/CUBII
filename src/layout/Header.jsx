@@ -165,7 +165,7 @@ export default function Header() {
       {/* الهيدر */}
       <header className="fixed top-0 inset-x-0 h-[56px] md:h-[64px] bg-primary text-white shadow-md z-50">
         <div className="max-w-6xl mx-auto h-full flex items-center justify-between px-3 md:px-6">
-          {/* الشعار */}
+          {/* اليسار: الشعار */}
           <div className="flex items-center gap-2">
             <Link to="/employee">
               <img
@@ -176,93 +176,125 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* روابط الديسكتوب */}
-          {!isMobile && (
-            <nav className="hidden md:flex items-center flex-row-reverse gap-1 md:gap-2">
-              {updatedFilteredLinks.map((link) => {
-                const isActive =
-                  selectedLink === link.href || isSubmenuActive(link.submenu);
+          {/* اليمين: نافيجيشن + معلومات المستخدم / تسجيل خروج */}
+          <div className="flex items-center gap-3">
+            {/* روابط الديسكتوب */}
+            {!isMobile && (
+              <nav className="hidden md:flex items-center flex-row-reverse gap-1 md:gap-2">
+                {updatedFilteredLinks.map((link) => {
+                  const isActive =
+                    selectedLink === link.href || isSubmenuActive(link.submenu);
 
-                return (
-                  <li
-                    key={link.text}
-                    data-nav-item
-                    className="list-none h-full flex items-center"
-                  >
-                    {link.submenu ? (
-                      <div className="relative" ref={menuRef}>
+                  return (
+                    <li
+                      key={link.text}
+                      data-nav-item
+                      className="list-none h-full flex items-center"
+                    >
+                      {link.submenu ? (
+                        <div className="relative" ref={menuRef}>
+                          <button
+                            type="button"
+                            onClick={() => setIsResourcesOpen((v) => !v)}
+                            className={`flex items-center gap-1 px-4 h-9 rounded-full text-xs md:text-sm font-medium tracking-wide transition-all
+                      ${
+                        isActive
+                          ? "bg-white/20 shadow-sm text-white"
+                          : "bg-white/5 text-slate-100 hover:bg-white/15"
+                      }`}
+                          >
+                            <span className="mt-[2px] text-xs">⌄</span>
+                            <span>إدارة الموارد</span>
+                          </button>
+
+                          {isResourcesOpen && (
+                            <div className="absolute right-0 mt-2 w-44 bg-white/95 backdrop-blur-md text-slate-900 rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+                              <div className="px-3 py-2 text-xs font-semibold text-slate-500 border-b border-slate-100">
+                                إدارة الموارد
+                              </div>
+                              {filteredResourceManagementLinks.map(
+                                (resource) => (
+                                  <button
+                                    key={resource.text}
+                                    type="button"
+                                    onClick={() =>
+                                      handleLinkClick(resource.href)
+                                    }
+                                    className={`w-full text-right px-3 py-2 text-sm flex items-center justify-between transition
+                              ${
+                                selectedLink === resource.href
+                                  ? "bg-primary/10 text-primary font-semibold"
+                                  : "hover:bg-slate-100"
+                              }`}
+                                  >
+                                    <span className="pr-1">
+                                      {resource.text}
+                                    </span>
+                                    <span className="text-xs opacity-60">
+                                      ›
+                                    </span>
+                                  </button>
+                                )
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
                         <button
                           type="button"
-                          onClick={() => setIsResourcesOpen((v) => !v)}
-                          className={`flex items-center gap-1 px-4 h-9 rounded-full text-xs md:text-sm font-medium tracking-wide transition-all
-                          ${
-                            isActive
-                              ? "bg-white/20 shadow-sm text-white"
-                              : "bg-white/5 text-slate-100 hover:bg-white/15"
-                          }`}
+                          onClick={() => handleLinkClick(link.href)}
+                          className={`h-9 px-4 rounded-full text-xs md:text-sm font-medium tracking-wide transition-all flex items-center
+                      focus:outline-none focus:ring-0
+                      ${
+                        isActive
+                          ? "bg-white/20 text-white shadow-sm"
+                          : "bg-white/5 text-slate-100 hover:bg-white/15"
+                      }
+                    `}
                         >
-                          <span className="mt-[2px] text-xs">⌄</span>
-                          <span>إدارة الموارد</span>
+                          {link.text}
                         </button>
+                      )}
+                    </li>
+                  );
+                })}
+              </nav>
+            )}
 
-                        {isResourcesOpen && (
-                          <div className="absolute right-0 mt-2 w-44 bg-white/95 backdrop-blur-md text-slate-900 rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
-                            <div className="px-3 py-2 text-xs font-semibold text-slate-500 border-b border-slate-100">
-                              إدارة الموارد
-                            </div>
-                            {filteredResourceManagementLinks.map((resource) => (
-                              <button
-                                key={resource.text}
-                                type="button"
-                                onClick={() => handleLinkClick(resource.href)}
-                                className={`w-full text-right px-3 py-2 text-sm flex items-center justify-between transition
-                                  ${
-                                    selectedLink === resource.href
-                                      ? "bg-primary/10 text-primary font-semibold"
-                                      : "hover:bg-slate-100"
-                                  }`}
-                              >
-                                <span className="pr-1">{resource.text}</span>
-                                <span className="text-xs opacity-60">›</span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleLinkClick(link.href)}
-                        className={`h-9 px-4 rounded-full text-xs md:text-sm font-medium tracking-wide transition-all flex items-center
-                          focus:outline-none focus:ring-0
-                          ${isActive ? "bg-white/20 text-white shadow-sm" : "bg-white/5 text-slate-100 hover:bg-white/15"}
-                        `}
-                      >
-                        {link.text}
-                      </button>
-                    )}
-                  </li>
-                );
-              })}
-            </nav>
-          )}
-
-          {/* زر القائمة للموبايل */}
-          <div className="flex md:hidden items-center gap-2">
-            {/* اسم المستخدم كمحة بسيطة في الهيدر للموبايل */}
+            {/* زر القائمة للموبايل */}
+            <div className="flex md:hidden items-center gap-2">
+              {/* اسم المستخدم كمحة بسيطة في الهيدر للموبايل */}
+              {!isUserLoading && user?.username && (
+                <span className="text-xs bg-white/15 px-2 py-1 rounded-full max-w-[90px] truncate">
+                  {user.username}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsDrawerOpen(true)}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition flex flex-col justify-center items-center gap-[3px]"
+              >
+                <span className="block w-6 h-[2px] bg-white rounded-full" />
+                <span className="block w-6 h-[2px] bg-white rounded-full" />
+                <span className="block w-6 h-[2px] bg-white rounded-full" />
+              </button>
+            </div>
+          </div>
+          {/* معلومات المستخدم + تسجيل خروج للديسكتوب / اللابتوب */}
+          <div className="hidden md:flex items-center gap-3">
             {!isUserLoading && user?.username && (
-              <span className="text-xs bg-white/15 px-2 py-1 rounded-full max-w-[90px] truncate">
+              <span className="text-xs md:text-sm bg-white/15 px-3 py-1 rounded-full max-w-[160px] truncate">
                 {user.username}
               </span>
             )}
+
             <button
               type="button"
-              onClick={() => setIsDrawerOpen(true)}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition flex flex-col justify-center items-center gap-[3px]"
+              onClick={handleLogout}
+              disabled={isLogoutLoading}
+              className="text-xs md:text-sm font-semibold bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full border border-white/20 disabled:opacity-60"
             >
-              <span className="block w-6 h-[2px] bg-white rounded-full" />
-              <span className="block w-6 h-[2px] bg-white rounded-full" />
-              <span className="block w-6 h-[2px] bg-white rounded-full" />
+              {isLogoutLoading ? "جاري تسجيل الخروج..." : "تسجيل الخروج"}
             </button>
           </div>
         </div>
