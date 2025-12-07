@@ -25,6 +25,7 @@ export function deleteSupplier(id) {
   return httpClient.delete(`/supplier/${id}`);
 }
 
+// POST /supplier/excel
 export function importSupplier(data) {
   return httpClient.post("/supplier/excel", { data });
 }

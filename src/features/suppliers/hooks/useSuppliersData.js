@@ -12,7 +12,7 @@ export function useSuppliersData({ page, pageSize }) {
   const [totalPages, setTotalPages] = useState(1);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);   // إضافة / تعديل
+  const [isSaving, setIsSaving] = useState(false); // إضافة / تعديل
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState(null);
 

@@ -1,9 +1,13 @@
 // src/features/suppliers/pages/SuppliersPage.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useSuppliersData } from "../hooks/useSuppliersData";
 import SuppliersTable from "../components/SuppliersTable";
 import SupplierFormModal from "../components/SupplierFormModal";
 import { useAuthStore } from "../../../store/useAuthStore";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import ImportExportIcon from "@mui/icons-material/ImportExport";
+import * as XLSX from "xlsx";
+import { importSupplier } from "../../../api/modules/suppliersApi";
 
 export default function SuppliersPage() {
   const { user, isUserLoading, fetchCurrentUser } = useAuthStore();
@@ -23,10 +27,15 @@ export default function SuppliersPage() {
     addSupplier,
     updateSupplier,
     deleteSupplier,
+    refetch,
   } = useSuppliersData({
     page: pagination.page,
     pageSize: pagination.pageSize,
   });
+
+  // استيراد من Excel
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef(null);
 
   // snack بسيط
   const [snackbar, setSnackbar] = useState({
@@ -140,6 +149,49 @@ export default function SuppliersPage() {
     }
   };
 
+  // فتح اختيار ملف الاستيراد
+  const handleImportClick = () => {
+    if (!user?.suppliers_can_add && user?.username !== "admin") {
+      showMessage("ليس لديك صلاحيات لإضافة مورد", "info");
+      return;
+    }
+
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // التعامل مع ملف Excel
+  const handleImportFile = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+      // استدعاء API الاستيراد
+      await importSupplier(jsonData);
+
+      showMessage("تم استيراد الموردين بنجاح", "success");
+
+      if (typeof refetch === "function") {
+        await refetch();
+      }
+    } catch (err) {
+      console.error(err);
+      showMessage("البيانات غير متوافقة أو حدث خطأ في الاستيراد", "error");
+    } finally {
+      setIsImporting(false);
+      event.target.value = "";
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto py-8 px-4" dir="rtl">
       {/* Snackbar بسيط */}
@@ -159,19 +211,50 @@ export default function SuppliersPage() {
         </div>
       )}
 
-      {/* العنوان + زر إضافة */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
-          الموردين
-        </h1>
+      <h1 className="text-2xl md:text-3xl font-bold text-slate-800 text-center">
+        الموردين
+      </h1>
 
+      <div className="flex items-center justify-between mb-6">
+        {/* زر الاستيراد (أقصى يسار) */}
+        <div>
+          {/* input مخفي لرفع ملف الإكسل */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            className="hidden"
+            onChange={handleImportFile}
+            disabled={isImporting}
+          />
+
+          {/* أيقونة import */}
+          <button
+            type="button"
+            onClick={handleImportClick}
+            disabled={isImporting}
+            className="inline-flex items-center justify-center rounded-full"
+          >
+            <ImportExportIcon
+              sx={{
+                fontSize: 40,
+                color: "white",
+                backgroundColor: "#4caf50",
+                padding: "8px",
+                borderRadius: "50%",
+                opacity: isImporting ? 0.6 : 1,
+              }}
+            />
+          </button>
+        </div>
+
+        {/* زر إضافة مورد (أقصى يمين) */}
         <button
           type="button"
           onClick={handleAddClick}
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 text-white text-sm font-semibold px-4 py-2 hover:bg-blue-700"
+          className="inline-flex items-center gap-2 rounded-lg text-white text-sm font-semibold px-4 py-2"
         >
-          <span className="text-lg">＋</span>
-          <span>إضافة مورد</span>
+          <AddCircleIcon sx={{ color: "#001473", fontSize: "50px" }} />
         </button>
       </div>
 
@@ -206,19 +289,29 @@ export default function SuppliersPage() {
 
       {/* مودال تأكيد حذف */}
       {deleteDialogOpen && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50">
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center bg-black/50"
+          onClick={() => {
+            setDeleteDialogOpen(false);
+            setSupplierToDelete(null);
+            setDeleteText("");
+          }}
+        >
           <div
             className="bg-white rounded-xl shadow-xl w-full max-w-md p-6"
             dir="rtl"
+            onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-lg font-semibold text-center text-red-600 mb-4">
               تأكيد الحذف
             </h2>
+
             <p className="text-sm text-right mb-3">
               هل أنت متأكد من رغبتك في حذف هذا المورد؟
               <br />
               للاستمرار اكتب كلمة <span className="font-semibold">"نعم"</span>
             </p>
+
             <input
               type="text"
               value={deleteText}

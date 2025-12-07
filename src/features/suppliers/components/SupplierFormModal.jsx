@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 
 export default function SupplierFormModal({
   open,
-  mode = "add", // "add" | "edit"
+  mode = "add",
   initialValues = { name: "", description: "" },
   loading = false,
   onClose,
@@ -37,10 +37,14 @@ export default function SupplierFormModal({
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50">
+    <div
+      className="fixed inset-0 z-40 flex items-center justify-center bg-black/50"
+      onClick={onClose}                   // ← غلق عند الضغط خارج المودال
+    >
       <div
         className="bg-white rounded-xl shadow-xl w-full max-w-md p-6"
         dir="rtl"
+        onClick={(e) => e.stopPropagation()} // ← منع غلق عند الضغط داخل المودال
       >
         <h2 className="text-lg font-semibold text-center mb-4">
           {mode === "add" ? "إضافة مورد جديد" : "تعديل المورد"}
@@ -60,9 +64,7 @@ export default function SupplierFormModal({
             }`}
           />
           {errors.name && (
-            <p className="mt-1 text-xs text-red-500 text-right">
-              {errors.name}
-            </p>
+            <p className="mt-1 text-xs text-red-500 text-right">{errors.name}</p>
           )}
         </div>
 
