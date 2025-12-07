@@ -1,11 +1,15 @@
 // src/features/items/pages/ItemsPage.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useItemsData } from "../hooks/useItemsData";
 import ItemsTable from "../components/ItemsTable";
 import ItemFormModal from "../components/ItemFormModal";
 import ItemDetailsModal from "../components/ItemDetailsModal";
 import ItemPriceSourcesModal from "../components/ItemPriceSourcesModal";
 import { useAuthStore } from "../../../store/useAuthStore";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import ImportExportIcon from "@mui/icons-material/ImportExport";
+import * as XLSX from "xlsx";
+import { importWarehouse } from "../../../api/modules/warehousesApi";
 
 export default function ItemsPage() {
   const { user, isUserLoading, fetchCurrentUser } = useAuthStore();
@@ -25,6 +29,7 @@ export default function ItemsPage() {
     addItem,
     updateItem,
     deleteItem,
+    refetch,
   } = useItemsData({
     page: pagination.page,
     pageSize: pagination.pageSize,
@@ -56,6 +61,10 @@ export default function ItemsPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [deleteText, setDeleteText] = useState("");
+
+  // Import Excel
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef(null);
 
   // تحميل بيانات المستخدم
   if (isUserLoading) {
@@ -169,6 +178,59 @@ export default function ItemsPage() {
     }
   };
 
+  // Import Excel handlers
+  const handleImportClick = () => {
+    if (!user?.items_can_add && user?.username !== "admin") {
+      showMessage("ليس لديك صلاحيات لإضافة عنصر", "info");
+      return;
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleImportFile = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+      // زي الكود القديم: نجهز بيانات المستودع
+      const formattedData = {
+        warehouse_manager: "esraa",
+        data: jsonData.map((row) => ({
+          id: row.id,
+          item_name: row.item_name,
+          item_bar: row.item_bar,
+          location: row.location,
+          quantity: row.quantity,
+          price_unit: row.price_unit,
+        })),
+      };
+
+      await importWarehouse(formattedData);
+
+      showMessage("تم استيراد البيانات بنجاح", "success");
+
+      if (typeof refetch === "function") {
+        await refetch();
+      }
+    } catch (err) {
+      console.error(err);
+      showMessage("البيانات غير متوافقة أو حدث خطأ في الاستيراد", "error");
+    } finally {
+      setIsImporting(false);
+      event.target.value = "";
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto py-8 px-4" dir="rtl">
       {/* Snackbar */}
@@ -188,19 +250,49 @@ export default function ItemsPage() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
-          المنتجات
-        </h1>
+      {/* العنوان */}
+      <h1 className="text-2xl md:text-3xl font-bold text-slate-800 text-center">
+        المنتجات
+      </h1>
 
+      {/* العنوان + زر إضافة + زر استيراد */}
+      <div className="flex items-center justify-between mb-6 mt-4">
+        {/* زر استيراد (يسار) */}
+        <div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            className="hidden"
+            onChange={handleImportFile}
+            disabled={isImporting}
+          />
+
+          <button
+            type="button"
+            onClick={handleImportClick}
+            disabled={isImporting}
+            className="inline-flex items-center justify-center rounded-full"
+          >
+            <ImportExportIcon
+              sx={{
+                fontSize: 40,
+                color: "white",
+                backgroundColor: "#4caf50",
+                padding: "8px",
+                borderRadius: "50%",
+                opacity: isImporting ? 0.6 : 1,
+              }}
+            />
+          </button>
+        </div>
+        {/* زر إضافة (يمين) */}
         <button
           type="button"
           onClick={handleAddClick}
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 text-white text-sm font-semibold px-4 py-2 hover:bg-blue-700"
+          className="inline-flex items-center gap-2 rounded-lg text-white text-sm font-semibold px-4 py-2"
         >
-          <span className="text-lg">＋</span>
-          <span>إضافة منتج</span>
+          <AddCircleIcon sx={{ color: "#001473", fontSize: "50px" }} />
         </button>
       </div>
 
@@ -251,10 +343,18 @@ export default function ItemsPage() {
 
       {/* Delete Confirm Modal */}
       {deleteOpen && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50">
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center bg-black/50"
+          onClick={() => {
+            setDeleteOpen(false);
+            setItemToDelete(null);
+            setDeleteText("");
+          }}
+        >
           <div
             className="bg-white rounded-xl shadow-xl w-full max-w-md p-6"
             dir="rtl"
+            onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-lg font-semibold text-center text-red-600 mb-3">
               تأكيد الحذف

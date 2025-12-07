@@ -1,5 +1,8 @@
 // src/features/items/components/ItemsTable.jsx
 import React from "react";
+import ArticleIcon from "@mui/icons-material/Article";
+import LaunchIcon from "@mui/icons-material/Launch";
+import ClearOutlinedIcon from "@mui/icons-material/ClearOutlined";
 
 export default function ItemsTable({
   rows,
@@ -15,7 +18,7 @@ export default function ItemsTable({
     <div className="bg-white rounded-xl shadow-md overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm" dir="rtl">
-          <thead className="bg-slate-800 text-white">
+          <thead className="bg-[#001473] text-white">
             <tr>
               <th className="px-4 py-2 text-center">#</th>
               <th className="px-4 py-2 text-center">اسم المنتج</th>
@@ -64,23 +67,29 @@ export default function ItemsTable({
                     <td className="px-4 py-2 text-center">{totalQty}</td>
                     <td className="px-4 py-2 text-center">
                       <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => onOpenItem(item)}
-                          className="px-2 py-1 rounded-md text-xs font-semibold bg-slate-700 text-white hover:bg-slate-800"
-                        >
-                          تفاصيل
-                        </button>
+
+
+                        {/* مصادر السعر */}
                         <button
                           onClick={() => onShowPriceSources(item)}
-                          className="px-2 py-1 rounded-md text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700"
+                          className="p-1 rounded-md hover:bg-gray-100"
                         >
-                          مصادر السعر
+                          <ArticleIcon sx={{ color: "#001473" }} />
                         </button>
+
+                        {/* حذف */}
                         <button
                           onClick={() => onDelete(item)}
-                          className="px-2 py-1 rounded-md text-xs font-semibold bg-red-600 text-white hover:bg-red-700"
+                          className="p-1 rounded-md hover:bg-gray-100"
                         >
-                          حذف
+                          <ClearOutlinedIcon sx={{ color: "red" }} />
+                        </button>
+                                                {/* تفاصيل */}
+                        <button
+                          onClick={() => onOpenItem(item)}
+                          className="p-1 rounded-md hover:bg-gray-100"
+                        >
+                          <LaunchIcon sx={{ color: "#4caf50" }} />
                         </button>
                       </div>
                     </td>

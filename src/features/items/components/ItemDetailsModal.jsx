@@ -1,5 +1,9 @@
 // src/features/items/components/ItemDetailsModal.jsx
 import React, { useEffect, useState } from "react";
+import EditIcon from "@mui/icons-material/Edit";
+import SaveIcon from "@mui/icons-material/Save";
+import ClearOutlinedIcon from "@mui/icons-material/ClearOutlined";
+import AddIcon from "@mui/icons-material/Add";
 
 export default function ItemDetailsModal({
   open,
@@ -73,7 +77,6 @@ export default function ItemDetailsModal({
     (localItem.locations || []).forEach((loc, i) => {
       const le = {};
       if (!loc.location?.trim()) le.location = "الموقع مطلوب";
-      // 👈 حزفنا شرط الكمية
       if (Object.keys(le).length > 0) {
         locErrors[i] = le;
       }
@@ -106,138 +109,174 @@ export default function ItemDetailsModal({
   const rental = localItem.rental_warehouse_info || {};
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50">
+    <div
+      className="fixed inset-0 z-40 flex items-center justify-center bg-black/50"
+      onClick={onClose} // يقفل لما تضغطي بره
+    >
       <div
-        className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 max-h-[80vh] overflow-y-auto"
+        className="bg-[#f6f6f6] rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[75vh] overflow-y-auto relative"
         dir="rtl"
+        onClick={(e) => e.stopPropagation()} // يمنع الإغلاق عند الضغط جوه
+        style={{
+          scrollbarWidth: "thin",
+        }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-slate-800">
+        {/* عنوان مع الأيقونات زي القديم */}
+        <div className="relative mb-5">
+          <h2 className="text-center font-bold text-[1.2rem] mb-2 text-[#1976d2]">
             تفاصيل المنتج
           </h2>
 
           {editing ? (
-            <div className="flex items-center gap-2">
+            <>
+              {/* زر إلغاء التعديل */}
               <button
                 type="button"
-                onClick={() => setEditing(false)}
-                className="px-3 py-1 rounded-lg border border-slate-300 text-slate-700 text-xs hover:bg-slate-100"
-                disabled={loadingSave}
+                onClick={() => {
+                  setEditing(false);
+                  setLocalItem(item || null);
+                  setErrors({});
+                }}
+                className="absolute top-0 left-[-10px] p-1 rounded-full hover:bg-red-50"
               >
-                إلغاء التعديل
+                <ClearOutlinedIcon
+                  sx={{
+                    fontSize: 30,
+                    color: "#d32f2f",
+                  }}
+                />
               </button>
+
+              {/* زر حفظ */}
               <button
                 type="button"
+                disabled={loadingSave}
                 onClick={handleSave}
-                disabled={loadingSave}
-                className="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-60"
+                className="absolute top-0 left-[24px] p-1 rounded-full hover:bg-blue-50 disabled:opacity-60"
               >
-                {loadingSave ? "جارٍ الحفظ..." : "حفظ"}
+                {loadingSave ? (
+                  <span className="inline-block h-6 w-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <SaveIcon
+                    sx={{
+                      fontSize: 28,
+                      color: "#1976d2",
+                    }}
+                  />
+                )}
               </button>
-            </div>
-          ) : canEdit ? (
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className="px-3 py-1 rounded-lg border border-blue-500 text-blue-600 text-xs font-semibold hover:bg-blue-50"
-            >
-              تعديل
-            </button>
-          ) : null}
-        </div>
-
-        {/* Basic info */}
-        <div className="grid md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block mb-1 text-xs font-medium text-right text-slate-600">
-              اسم المنتج
-            </label>
-            {editing ? (
-              <>
-                <input
-                  type="text"
-                  value={localItem.item_name || ""}
-                  onChange={(e) =>
-                    handleFieldChange("item_name", e.target.value)
-                  }
-                  className={`w-full rounded-lg border px-3 py-2 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.item_name ? "border-red-400" : "border-slate-300"
-                  }`}
-                />
-                {errors.item_name && (
-                  <p className="mt-1 text-xs text-red-500 text-right">
-                    {errors.item_name}
-                  </p>
-                )}
-              </>
-            ) : (
-              <div className="px-3 py-2 rounded-lg bg-slate-50 text-sm">
-                {localItem.item_name}
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className="block mb-1 text-xs font-medium text-right text-slate-600">
-              الباركود
-            </label>
-            {editing ? (
-              <>
-                <input
-                  type="text"
-                  value={localItem.item_bar || ""}
-                  onChange={(e) =>
-                    handleFieldChange("item_bar", e.target.value)
-                  }
-                  className={`w-full rounded-lg border px-3 py-2 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.item_bar ? "border-red-400" : "border-slate-300"
-                  }`}
-                />
-                {errors.item_bar && (
-                  <p className="mt-1 text-xs text-red-500 text-right">
-                    {errors.item_bar}
-                  </p>
-                )}
-              </>
-            ) : (
-              <div className="px-3 py-2 rounded-lg bg-slate-50 text-sm">
-                {localItem.item_bar}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Locations */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-semibold text-slate-800">
-              المواقع و الكميات
-            </h3>
-            {editing && (
+            </>
+          ) : (
+            canEdit && (
               <button
                 type="button"
-                onClick={handleAddLocation}
-                className="px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700"
+                onClick={() => setEditing(true)}
+                className="absolute top-0 left-[-7px] p-1 rounded-full hover:bg-blue-50"
               >
-                إضافة موقع
+                <EditIcon
+                  sx={{
+                    fontSize: 28,
+                    color: "#1976d2",
+                  }}
+                />
               </button>
-            )}
+            )
+          )}
+        </div>
+
+        {/* بيانات أساسية (اسم + باركود) بنفس ستايل القديم */}
+        <div className="mb-2">
+          <div className="flex items-start mb-2">
+            <h5
+              className="font-bold text-[#717171]"
+              style={{ minWidth: "150px" }}
+            >
+              اسم المنتج:
+            </h5>
+            <div className="flex-1">
+              {editing ? (
+                <>
+                  <input
+                    type="text"
+                    value={localItem.item_name || ""}
+                    onChange={(e) =>
+                      handleFieldChange("item_name", e.target.value)
+                    }
+                    className={`w-full bg-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 border ${
+                      errors.item_name ? "border-red-400" : "border-transparent"
+                    }`}
+                    style={{
+                      textAlign: "right",
+                    }}
+                  />
+                  {errors.item_name && (
+                    <p className="mt-1 text-xs text-red-500 text-right">
+                      {errors.item_name}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <h5>{localItem.item_name}</h5>
+              )}
+            </div>
           </div>
 
+          <hr className="border-slate-200 my-1" />
+
+          <div className="flex items-start mb-2">
+            <h5
+              className="font-bold text-[#717171]"
+              style={{ minWidth: "150px" }}
+            >
+              باركود المنتج:
+            </h5>
+            <div className="flex-1">
+              {editing ? (
+                <>
+                  <input
+                    type="text"
+                    value={localItem.item_bar || ""}
+                    onChange={(e) =>
+                      handleFieldChange("item_bar", e.target.value)
+                    }
+                    className={`w-full bg-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 border ${
+                      errors.item_bar ? "border-red-400" : "border-transparent"
+                    }`}
+                    style={{
+                      textAlign: "right",
+                    }}
+                  />
+                  {errors.item_bar && (
+                    <p className="mt-1 text-xs text-red-500 text-right">
+                      {errors.item_bar}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <h5>{localItem.item_bar}</h5>
+              )}
+            </div>
+          </div>
+
+          <hr className="border-slate-200 my-2" />
+        </div>
+
+        {/* المواقع والكميات على شكل كروت زي التصميم القديم */}
+        <div className="mt-2">
           {locations.length === 0 ? (
-            <div className="px-3 py-2 rounded-lg bg-slate-50 text-sm text-slate-500">
+            <div className="px-3 py-2 rounded-lg bg-slate-50 text-sm text-slate-500 text-center">
               لا توجد مواقع مسجلة لهذا المنتج
             </div>
           ) : (
-            <div className="space-y-3">
+            <ul className="space-y-3">
               {locations.map((loc, index) => {
                 const locError = errors.locations?.[index] || {};
                 return (
-                  <div
+                  <li
                     key={index}
-                    className="border rounded-lg p-3 bg-slate-50 relative"
+                    className="flex flex-col bg-[#fafafa] rounded-md mb-3 shadow-md relative px-3 py-2"
                   >
+                    {/* لو عايزة زر حذف للموقع */}
                     {editing && (
                       <button
                         type="button"
@@ -248,11 +287,15 @@ export default function ItemDetailsModal({
                       </button>
                     )}
 
-                    <div className="grid md:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block mb-1 text-xs font-medium text-right text-slate-600">
-                          الموقع
-                        </label>
+                    {/* الموقع */}
+                    <div className="flex w-full mb-1 mt-1">
+                      <h5
+                        className="font-bold text-right"
+                        style={{ width: "100px" }}
+                      >
+                        الموقع:
+                      </h5>
+                      <div className="flex-1">
                         {editing ? (
                           <>
                             <input
@@ -265,11 +308,14 @@ export default function ItemDetailsModal({
                                   e.target.value
                                 )
                               }
-                              className={`w-full rounded-lg border px-3 py-2 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                              className={`w-full bg-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 border ${
                                 locError.location
                                   ? "border-red-400"
-                                  : "border-slate-300"
+                                  : "border-transparent"
                               }`}
+                              style={{
+                                textAlign: "right",
+                              }}
                             />
                             {locError.location && (
                               <p className="mt-1 text-xs text-red-500 text-right">
@@ -278,69 +324,93 @@ export default function ItemDetailsModal({
                             )}
                           </>
                         ) : (
-                          <div className="px-3 py-2 rounded-lg bg-white text-sm">
-                            {loc.location}
-                          </div>
+                          <h5>{loc.location}</h5>
                         )}
                       </div>
+                    </div>
 
-                      {/* داخل map للـ locations في ItemDetailsModal.jsx */}
-
-                      <div>
-                        <label className="block mb-1 text-xs font-medium text-right text-slate-600">
-                          الكمية
-                        </label>
-                        <div className="px-3 py-2 rounded-lg bg-white text-sm">
-                          {loc.quantity}
-                        </div>
+                    {/* الكمية (عرض فقط) */}
+                    <div className="flex w-full mb-1">
+                      <h5
+                        className="font-bold text-right"
+                        style={{ width: "100px" }}
+                      >
+                        الكمية:
+                      </h5>
+                      <div className="flex-1">
+                        <h5 className="pr-2">{loc.quantity}</h5>
                       </div>
                     </div>
-                  </div>
+                  </li>
                 );
               })}
+            </ul>
+          )}
+
+          {/* زر إضافة موقع جديد زي الزر الأزرق في القديم */}
+          {editing && (
+            <div className="mt-2 flex justify-start">
+              <button
+                type="button"
+                onClick={handleAddLocation}
+                className="flex items-center justify-center p-1.5 bg-[#1976d2] text-white rounded-full shadow hover:bg-[#145a9c]"
+              >
+                <AddIcon sx={{ fontSize: 28 }} />
+              </button>
             </div>
           )}
         </div>
 
-        {/* rental warehouse info */}
+        {/* مخزن الحجز بشكل قريب من القديم */}
         {(rental.quantity ||
           rental.reserved_quantity ||
           rental.available_quantity) && (
-          <div className="mb-4 border rounded-lg p-3 bg-slate-50">
-            <h3 className="text-sm font-semibold text-slate-800 mb-2">
-              مخزن الحجز
-            </h3>
-            <div className="grid md:grid-cols-3 gap-3 text-sm">
-              <div>
-                <div className="text-xs text-slate-500 mb-1">
-                  إجمالي الكمية في الحجز
-                </div>
-                <div className="font-semibold text-slate-800">
-                  {rental.quantity ?? 0}
-                </div>
+          <>
+            <hr className="border-slate-200 mt-4 mb-2" />
+            <div className="flex flex-col bg-[#fafafa] rounded-md p-3 shadow-sm mt-1">
+              <h5 className="font-bold text-[#717171] mb-2 text-right">
+                مخزن الحجز:
+              </h5>
+
+              <div className="flex w-full mb-1">
+                <h5
+                  className="font-bold text-right"
+                  style={{ width: "160px" }}
+                >
+                  إجمالي الكمية في الحجز:
+                </h5>
+                <h5>{rental.quantity ?? 0}</h5>
               </div>
-              <div>
-                <div className="text-xs text-slate-500 mb-1">كمية محجوزة</div>
-                <div className="font-semibold text-slate-800">
-                  {rental.reserved_quantity ?? 0}
-                </div>
+
+              <div className="flex w-full mb-1">
+                <h5
+                  className="font-bold text-right"
+                  style={{ width: "160px" }}
+                >
+                  كمية محجوزة:
+                </h5>
+                <h5>{rental.reserved_quantity ?? 0}</h5>
               </div>
-              <div>
-                <div className="text-xs text-slate-500 mb-1">كمية متاحة</div>
-                <div className="font-semibold text-slate-800">
-                  {rental.available_quantity ?? 0}
-                </div>
+
+              <div className="flex w-full mb-1">
+                <h5
+                  className="font-bold text-right"
+                  style={{ width: "160px" }}
+                >
+                  كمية متاحة:
+                </h5>
+                <h5>{rental.available_quantity ?? 0}</h5>
               </div>
             </div>
-          </div>
+          </>
         )}
 
-        {/* footer */}
-        <div className="flex justify-center mt-4">
+        {/* زر إغلاق تحت في النص زي القديم */}
+        <div className="mt-4 text-center">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-slate-700 text-white text-sm font-semibold hover:bg-slate-800"
+            className="px-5 py-2 rounded-full bg-[#1976d2] text-white text-sm font-semibold hover:bg-[#145a9c]"
             disabled={loadingSave}
           >
             إغلاق
