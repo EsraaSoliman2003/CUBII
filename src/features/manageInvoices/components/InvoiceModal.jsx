@@ -22,6 +22,11 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
     type: "",
   });
 
+  // ✅ صلاحيات المستخدم
+  const isAdmin = user?.username === "admin";
+  const canEdit = user?.can_edit || isAdmin;
+  const canViewPrices = user?.view_prices || isAdmin;
+
   // 1) تحميل الفاتورة
   useEffect(() => {
     if (!open || !invoice?.id) return;
@@ -57,7 +62,7 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
 
         setSelectedInvoice(transformed);
         setEditingInvoice(transformed);
-        setIsEditing(false);
+        setIsEditing(false); // نضمن إننا دايمًا في وضع عرض أولًا
       } catch (err) {
         console.error("getInvoice error in InvoiceModal", err);
         setSnackbar({
@@ -167,7 +172,6 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
           "returnWarrantyInvoicePartially error in InvoiceModal",
           err
         );
-        // مش لازم نطلع SnackBar هنا، يكفي اللوج
       }
     };
 
@@ -184,14 +188,13 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
   };
 
   const handleStartEdit = () => {
-    if (!selectedInvoice) return;
+    if (!canEdit || !selectedInvoice) return; // ✅ منع الدخول لو مفيش صلاحية
     setEditingInvoice(selectedInvoice);
     setIsEditing(true);
   };
 
   const handleSave = async () => {
-    if (!editingInvoice) return;
-
+    if (!canEdit || !editingInvoice) return; // ✅ تأكيد إضافي
     setSaving(true);
     try {
       await apiUpdateInvoice({
@@ -220,6 +223,7 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
   };
 
   const addRow = () => {
+    if (!canEdit) return; // من باب الأمان
     setEditingInvoice((prev) => ({
       ...prev,
       items: [
@@ -240,6 +244,7 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
   };
 
   const deleteRow = (index) => {
+    if (!canEdit) return;
     setEditingInvoice((prev) => ({
       ...prev,
       items: prev.items.filter((_, i) => i !== index),
@@ -248,19 +253,16 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
 
   if (!open || !invoice) {
     return (
-      <>
-        <SnackBar
-          open={snackbar.open}
-          message={snackbar.message}
-          type={snackbar.type}
-          onClose={() => setSnackbar((p) => ({ ...p, open: false }))}
-        />
-      </>
+      <SnackBar
+        open={snackbar.open}
+        message={snackbar.message}
+        type={snackbar.type}
+        onClose={() => setSnackbar((p) => ({ ...p, open: false }))}
+      />
     );
   }
 
   const isDeposit = selectedInvoice?.type === "أمانات";
-  const canViewPrices = user?.view_prices || user?.username === "admin";
 
   return (
     <>
@@ -280,36 +282,41 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
             </h2>
 
             <div className="flex items-center gap-2">
-              {isEditing ? (
+              {/* ✅ زرار التعديل يظهر بس لو معاه صلاحية */}
+              {canEdit && (
                 <>
-                  <button
-                    type="button"
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="px-3 py-1 rounded-md text-sm bg-blue-600 text-white disabled:opacity-50"
-                  >
-                    {saving ? "جارٍ الحفظ..." : "حفظ التعديلات"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingInvoice(selectedInvoice);
-                      setIsEditing(false);
-                    }}
-                    className="px-3 py-1 rounded-md text-sm bg-slate-200 text-slate-800"
-                  >
-                    إلغاء التعديل
-                  </button>
+                  {isEditing ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="px-3 py-1 rounded-md text-sm bg-blue-600 text-white disabled:opacity-50"
+                      >
+                        {saving ? "جارٍ الحفظ..." : "حفظ التعديلات"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingInvoice(selectedInvoice);
+                          setIsEditing(false);
+                        }}
+                        className="px-3 py-1 rounded-md text-sm bg-slate-200 text-slate-800"
+                      >
+                        إلغاء التعديل
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleStartEdit}
+                      disabled={loading || !selectedInvoice}
+                      className="px-3 py-1 rounded-md text-sm bg-blue-600 text-white disabled:opacity-50"
+                    >
+                      تعديل
+                    </button>
+                  )}
                 </>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleStartEdit}
-                  disabled={loading || !selectedInvoice}
-                  className="px-3 py-1 rounded-md text-sm bg-blue-600 text-white disabled:opacity-50"
-                >
-                  تعديل
-                </button>
               )}
 
               <button
@@ -330,7 +337,7 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
           ) : (
             <InvoiceLayout
               selectedInvoice={selectedInvoice}
-              isEditing={isEditing}
+              isEditing={canEdit && isEditing} // ✅ حتى لو isEditing = true، منغيرش غير لو معاه صلاحية
               editingInvoice={editingInvoice}
               setEditingInvoice={setEditingInvoice}
               selectedNowType={{ type: selectedInvoice.type }}

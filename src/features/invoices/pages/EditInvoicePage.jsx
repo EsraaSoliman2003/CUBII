@@ -1,6 +1,6 @@
 // src/features/invoices/pages/EditInvoicePage.jsx
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Navigate } from "react-router-dom";
 import {
   getInvoice,
   updateInvoice as apiUpdateInvoice,
@@ -22,6 +22,12 @@ export default function EditInvoicePage() {
     type: "",
   });
 
+  // تحميل بيانات المستخدم
+  useEffect(() => {
+    fetchCurrentUser();
+  }, [fetchCurrentUser]);
+
+  // تحميل الفاتورة
   useEffect(() => {
     let mounted = true;
     setIsLoading(true);
@@ -61,6 +67,7 @@ export default function EditInvoicePage() {
     };
   }, [id]);
 
+  // لسه بيجيب بيانات اليوزر أو الفاتورة
   if (isLoading || isUserLoading || !editingInvoice) {
     return (
       <div className="w-full h-[60vh] flex items-center justify-center">
@@ -69,6 +76,23 @@ export default function EditInvoicePage() {
     );
   }
 
+  // لو مفيش يوزر لأي سبب
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // ✅ هنا التحقق من صلاحية التعديل
+  const canEditInvoice = user?.can_edit || user?.username === "admin";
+
+  if (!canEditInvoice) {
+    return (
+      <div className="w-full h-[60vh] flex items-center justify-center text-red-600 font-semibold">
+        ليست لديك صلاحية لتعديل الفواتير
+      </div>
+    );
+  }
+
+  // عرض الأسعار حسب الصلاحية
   const canViewPrices = user?.view_prices || user?.username === "admin";
 
   const handleSave = async () => {
@@ -89,7 +113,7 @@ export default function EditInvoicePage() {
       });
     } finally {
       setIsSaving(false);
-    }
+    };
   };
 
   return (
