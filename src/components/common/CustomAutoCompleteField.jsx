@@ -1,6 +1,7 @@
+// src/components/common/CustomAutoCompleteField.jsx
 import React, { useEffect, useRef, useState, useMemo } from "react";
 
-const MAX_OPTIONS = 50; // 👈 هنعرِض بس أول 50 نتيجة
+const MAX_OPTIONS = 50;
 
 export default function CustomAutoCompleteField({
   isLoading,
@@ -11,6 +12,8 @@ export default function CustomAutoCompleteField({
   fieldName,
   placeholder = "اختر قيمة",
   isBig = false,
+  inputClassName = "",
+  containerClassName = "",
 }) {
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState(
@@ -55,11 +58,7 @@ export default function CustomAutoCompleteField({
     }
 
     return (
-      option[fieldName] ||
-      option.name ||
-      option.label ||
-      option.title ||
-      ""
+      option[fieldName] || option.name || option.label || option.title || ""
     );
   };
 
@@ -83,62 +82,51 @@ export default function CustomAutoCompleteField({
     }
 
     return (
-      option[fieldName] ||
-      option.name ||
-      option.label ||
-      option.title ||
-      ""
+      option[fieldName] || option.name || option.label || option.title || ""
     );
   };
 
   const normalizedValues = Array.isArray(values) ? values : [];
 
-  // ✅ فلترة + limit بـ useMemo
   const filteredOptions = useMemo(() => {
     if (!normalizedValues.length) return [];
 
     const search = (inputValue || "").toLowerCase().trim();
 
-    // لو حابة ما تفتحيش ليستة كبيرة قبل ما يكتب حرفين على الأقل:
-    // لو مش حابة الشرط دا شليه 👇
-    // if (search.length < 1) {
-    //   return [];
-    // }
-
     const result = normalizedValues.filter((opt) =>
       getLabel(opt).toLowerCase().includes(search)
     );
 
-    return result.slice(0, MAX_OPTIONS); // 👈 هنا السر
+    return result.slice(0, MAX_OPTIONS);
   }, [normalizedValues, inputValue]);
 
-const handleSelect = (option) => {
-  const label = getLabel(option);
-  const stored = getStoredValue(option);
+  const handleSelect = (option) => {
+    const label = getLabel(option);
+    const stored = getStoredValue(option);
 
-  setInputValue(label);
-  setOpen(false);
+    setInputValue(label);
+    setOpen(false);
 
-  if (typeof setEditingItem === "function") {
-    const updated = {
-      ...(editingItem || {}),
-      [fieldName]: stored,
-    };
-
-    // ✅ نبعته زي ما بعض الأماكن متوقعة: (newRow, option)
-    setEditingItem(updated, option);
-  }
-};
-
+    if (typeof setEditingItem === "function") {
+      const updated = {
+        ...(editingItem || {}),
+        [fieldName]: stored,
+      };
+      setEditingItem(updated, option);
+    }
+  };
 
   return (
-    <div className="relative w-full text-sm" ref={wrapperRef}>
+    <div
+      className={`relative w-full text-sm ${containerClassName}`}
+      ref={wrapperRef}
+    >
       <div className="relative">
         <input
           type="text"
-          className={`w-full border border-gray-300 rounded-md px-3 py-2 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+          className={`w-full rounded-md px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-blue-500 ${
             isBig ? "text-sm" : "text-xs"
-          } border-0 outline-none focus:outline-none focus:ring-0 focus:border-transparent`}
+          } ${inputClassName}`}
           placeholder={placeholder}
           value={inputValue}
           onFocus={() => setOpen(true)}
@@ -172,7 +160,6 @@ const handleSelect = (option) => {
             </button>
           ))}
 
-          {/* لو فيه أكتر من 50 نتيجة ندي إشارة بسيطة للمستخدم */}
           {normalizedValues.length > MAX_OPTIONS && (
             <div className="px-3 py-1 text-[11px] text-gray-400 text-center border-t">
               تم عرض أول {MAX_OPTIONS} نتيجة فقط، جرّبي تضييق البحث

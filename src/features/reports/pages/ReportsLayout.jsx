@@ -25,7 +25,7 @@ const STATUS_EN_TO_AR = {
 const STATUS_AR_TO_EN = {
   "لم تراجع": "draft",
   "لم تؤكد": "accreditation",
-  "تم": "confirmed",
+  تم: "confirmed",
   "استرداد جزئي": "partially_returned",
   "تم الاسترداد": "returned",
 };
@@ -147,10 +147,6 @@ export default function ReportsLayout() {
     <div className="w-[95%] mx-auto pt-24 pb-10" dir="rtl">
       {/* الهيدر */}
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
-          التقارير
-        </h1>
-
         {/* زر نسخ رابط البحث يظهر فقط في صفحة النتائج */}
         {onResultsPage && (
           <button
