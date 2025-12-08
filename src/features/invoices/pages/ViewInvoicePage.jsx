@@ -123,7 +123,9 @@ export default function ViewInvoicePage() {
   }
 
   const isAmanat = invoice.type === "أمانات";
-  const canViewPrices = user?.view_prices || user?.username === "admin";
+  const isAdmin = user?.username === "admin";
+  const canViewPrices = user?.view_prices || isAdmin;
+  const canRecoverDeposits = user?.can_recover_deposits || isAdmin;
 
   return (
     <div className="w-[90%] mx-auto mt-10 mb-10" dir="rtl">
@@ -138,7 +140,7 @@ export default function ViewInvoicePage() {
         isPurchasesType={invoice.type === "اضافه"}
         showCommentField
         isCreate={false}
-        canEsterdad={isAmanat}
+        canEsterdad={isAmanat && canRecoverDeposits}
         setSelectedInvoice={setInvoice}
         canViewPrices={canViewPrices}
       />

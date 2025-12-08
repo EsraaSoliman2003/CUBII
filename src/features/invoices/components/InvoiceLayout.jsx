@@ -59,7 +59,7 @@ export default function InvoiceLayout({
       />
 
       {canViewPrices &&
-        (isPurchasesType || selectedInvoice.type === "اضافه") && (
+        ((isPurchasesType || selectedInvoice.type === "اضافه") || (!isPurchasesType && !isCreate)) && (
           <InvoiceMoneySummary
             selectedInvoice={selectedInvoice}
             editingInvoice={editingInvoice}

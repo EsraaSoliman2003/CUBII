@@ -1,5 +1,10 @@
 // src/features/manageInvoices/components/InvoiceActionsCell.jsx
 import React from "react";
+import ArticleIcon from "@mui/icons-material/Article";
+
+// ==== أيقونات MUI ====
+import LaunchIcon from "@mui/icons-material/Launch"; // فتح الفاتورة
+import ClearOutlinedIcon from "@mui/icons-material/ClearOutlined"; // حذف
 
 const InvoiceActionsCell = ({
   invoice,
@@ -29,54 +34,56 @@ const InvoiceActionsCell = ({
 
   return (
     <div className="flex items-center justify-center gap-2">
-      {/* زرار فتح الفاتورة */}
+      {/* === زر فتح الفاتورة === */}
       <button
         type="button"
         onClick={() => onOpenInvoice(invoice)}
-        className="px-2 py-1 text-xs rounded border border-slate-300 bg-white hover:bg-slate-100"
+        className="px-2 py-1 text-xs rounded bg-white hover:bg-slate-100 flex items-center gap-1"
       >
-        فتح
+        <LaunchIcon fontSize="small" />
       </button>
 
-      {/* حذف */}
+      {/* === حذف === */}
       {canDelete && (
         <button
           type="button"
           onClick={() => onDeleteOne(invoice)}
           disabled={singleDeleteLoading}
-          className="px-2 py-1 text-xs rounded border border-red-500 text-red-600 bg-white hover:bg-red-50 disabled:opacity-60"
+          className="px-2 py-1 text-xs rounded text-red-600 bg-white disabled:opacity-60 flex items-center gap-1"
         >
-          {singleDeleteLoading ? "..." : "حذف"}
+          <ClearOutlinedIcon fontSize="small" />
         </button>
       )}
 
-      {/* تفاصيل سعرية */}
+      {/* === تفاصيل سعرية === */}
       {showDetailsAllowed && (
         <button
           type="button"
           onClick={() => onShowDetails(invoice)}
-          className="px-2 py-1 text-xs rounded border border-amber-500 text-amber-600 bg-white hover:bg-amber-50"
+          className="px-2 py-1 text-xs rounded border bg-white flex items-center gap-1"
         >
-          تفاصيل سعرية
+          <ArticleIcon sx={{ color: "#001473" }} />
         </button>
       )}
 
-      {/* أمانات */}
+      {/* === أمانات === */}
       {isDeposit && (
         <div className="text-xs">
           {isReturned ? (
             <span className="text-green-600 font-semibold">
               {invoice.status}
             </span>
-          ) : (
+          ) : canRecoverDeposits ? (
             <button
               type="button"
               onClick={() => onOpenInvoice(invoice)}
-              disabled={recoverLoading || !canRecoverDeposits}
-              className="px-2 py-1 text-xs rounded border border-cyan-600 text-cyan-700 bg-white hover:bg-cyan-50 disabled:opacity-60"
+              disabled={recoverLoading}
+              className="px-2 py-1 text-xs rounded border border-cyan-600 text-cyan-700 bg-white hover:bg-cyan-50 disabled:opacity-60 flex items-center gap-1"
             >
               {recoverLoading ? "..." : "استرداد"}
             </button>
+          ) : (
+            <span className="text-slate-500">أمانات (بدون صلاحية استرداد)</span>
           )}
         </div>
       )}

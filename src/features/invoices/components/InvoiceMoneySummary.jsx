@@ -86,7 +86,7 @@ export default function InvoiceMoneySummary({
       </div>
 
       {/* المدفوع */}
-      <div className="flex-1 min-w-[160px] border border-gray-300  bg-white px-3 py-2 flex flex-col items-center gap-1">
+      <div className="flex-1 min-w-[160px] border border-gray-300  bg-white px-3 py-2 flex flex-col items-center gap-1 text-center">
         <span className="font-semibold">المدفوع</span>
         <div className="w-full">
           {isEditing ? (

@@ -269,10 +269,7 @@ export default function InvoiceItemsTable({
   return (
     <>
       {/* 🔹 مكمل لنفس الإطار: بدون مسافة، بوردر من تحت بس و Rounded من تحت */}
-      <div
-        className="border border-gray-300 border-t-0"
-        dir="rtl"
-      >
+      <div className="border border-gray-300 border-t-0" dir="rtl">
         <table className="w-full text-sm">
           <thead className="bg-[#dddddd] text-gray-800">
             <tr>
@@ -362,9 +359,8 @@ export default function InvoiceItemsTable({
                       !isFullyReturned &&
                       selectedInvoice?.status !== "returned" &&
                       selectedInvoice?.status !== "تم الاسترداد" && (
-                        <button
-                          type="button"
-                          className="absolute -left-8 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center  text-blue-600 text-xs hover:bg-blue-50"
+                        <div
+                          className="absolute left-12 top-1/2 -translate-y-1/2 w-3 h-3 flex items-center justify-center text-blue-600 text-lg hover:bg-blue-50 cursor-pointer"
                           title="استرداد"
                           onClick={() => {
                             setReturnItemIndex(index);
@@ -372,7 +368,7 @@ export default function InvoiceItemsTable({
                           }}
                         >
                           ⟲
-                        </button>
+                        </div>
                       )}
                   </td>
 

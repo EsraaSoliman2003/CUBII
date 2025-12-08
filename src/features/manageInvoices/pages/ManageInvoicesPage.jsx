@@ -157,11 +157,12 @@ const ManageInvoicesPage = () => {
 
   return (
     <div className="w-[95%] mx-auto pt-24 pb-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
-          العمليات / الفواتير
-        </h1>
-      </div>
+<div className="w-full text-center">
+  <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
+    العمليات
+  </h1>
+</div>
+
 
       {/* Alert */}
       {alert && (

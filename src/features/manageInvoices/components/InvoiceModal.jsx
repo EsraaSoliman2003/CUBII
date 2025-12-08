@@ -7,6 +7,8 @@ import {
 } from "../../../api/modules/invoicesApi";
 import InvoiceLayout from "../../invoices/components/InvoiceLayout";
 import SnackBar from "../../../components/common/SnackBar";
+// ✅ استدعاء هوك الطباعة
+import { useInvoicePrint } from "../../invoices/hooks/useInvoicePrint";
 
 export default function InvoiceModal({ open, onClose, invoice, user }) {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
@@ -22,10 +24,13 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
     type: "",
   });
 
-  // ✅ صلاحيات المستخدم
+  // ✅ هوك الطباعة
+  const { handlePrint } = useInvoicePrint();
+
   const isAdmin = user?.username === "admin";
   const canEdit = user?.can_edit || isAdmin;
   const canViewPrices = user?.view_prices || isAdmin;
+  const canRecoverDeposits = user?.can_recover_deposits || isAdmin;
 
   // 1) تحميل الفاتورة
   useEffect(() => {
@@ -62,7 +67,7 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
 
         setSelectedInvoice(transformed);
         setEditingInvoice(transformed);
-        setIsEditing(false); // نضمن إننا دايمًا في وضع عرض أولًا
+        setIsEditing(false);
       } catch (err) {
         console.error("getInvoice error in InvoiceModal", err);
         setSnackbar({
@@ -82,7 +87,7 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
     };
   }, [open, invoice?.id]);
 
-  // 2) لو الفاتورة أمانات: تحميل حالة الاسترداد الجزئي وتحديث البنود
+  // 2) لو الفاتورة أمانات: حالة الاسترداد
   useEffect(() => {
     if (!selectedInvoice || selectedInvoice.type !== "أمانات") return;
 
@@ -96,7 +101,6 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
         const status = res.data;
         if (!mounted || !status?.items) return;
 
-        // تحديث selectedInvoice
         setSelectedInvoice((prev) => {
           if (!prev) return prev;
           return {
@@ -132,7 +136,6 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
           };
         });
 
-        // تحديث editingInvoice عشان لو في وضع تعديل بردو يشوف نفس القيم
         setEditingInvoice((prev) => {
           if (!prev) return prev;
           return {
@@ -188,13 +191,14 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
   };
 
   const handleStartEdit = () => {
-    if (!canEdit || !selectedInvoice) return; // ✅ منع الدخول لو مفيش صلاحية
+    if (!canEdit || !selectedInvoice) return;
     setEditingInvoice(selectedInvoice);
     setIsEditing(true);
   };
 
   const handleSave = async () => {
-    if (!canEdit || !editingInvoice) return; // ✅ تأكيد إضافي
+    if (!canEdit || !editingInvoice) return;
+
     setSaving(true);
     try {
       await apiUpdateInvoice({
@@ -223,7 +227,7 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
   };
 
   const addRow = () => {
-    if (!canEdit) return; // من باب الأمان
+    if (!canEdit) return;
     setEditingInvoice((prev) => ({
       ...prev,
       items: [
@@ -267,7 +271,7 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
   return (
     <>
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+        className="fixed -inset-10 z-50 flex items-center justify-center bg-black/40"
         onClick={handleClose}
       >
         <div
@@ -282,7 +286,16 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
             </h2>
 
             <div className="flex items-center gap-2">
-              {/* ✅ زرار التعديل يظهر بس لو معاه صلاحية */}
+              {/* ✅ زر الطباعة – مفعّل فقط في وضع العرض */}
+              <button
+                type="button"
+                onClick={() => handlePrint("printable-invoice-modal")}
+                disabled={loading || !selectedInvoice || isEditing}
+                className="px-3 py-1 rounded-md text-sm bg-green-600 text-white disabled:opacity-50"
+              >
+                طباعة
+              </button>
+
               {canEdit && (
                 <>
                   {isEditing ? (
@@ -336,8 +349,9 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
             </div>
           ) : (
             <InvoiceLayout
+              className="printable-invoice-modal"
               selectedInvoice={selectedInvoice}
-              isEditing={canEdit && isEditing} // ✅ حتى لو isEditing = true، منغيرش غير لو معاه صلاحية
+              isEditing={canEdit && isEditing}
               editingInvoice={editingInvoice}
               setEditingInvoice={setEditingInvoice}
               selectedNowType={{ type: selectedInvoice.type }}
@@ -346,7 +360,7 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
               isPurchasesType={selectedInvoice.type === "اضافه"}
               showCommentField
               isCreate={false}
-              canEsterdad={isDeposit}
+              canEsterdad={isDeposit && canRecoverDeposits}
               setSelectedInvoice={setSelectedInvoice}
               canViewPrices={canViewPrices}
             />
