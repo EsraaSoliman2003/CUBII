@@ -1,10 +1,6 @@
 // src/router/AppRouter.jsx
 import React from "react";
-import {
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import MainLayout from "../layout/MainLayout";
 import ProtectedRoute from "./guards/ProtectedRoute";
@@ -61,7 +57,7 @@ export default function AppRouter() {
             path="/createinvoice"
             element={
               <PermissionGate
-                all={["create_inventory_operations", "create_additions"]}
+                any={["create_inventory_operations", "create_additions"]}
               >
                 <CreateInvoicePage />
               </PermissionGate>
@@ -109,11 +105,7 @@ export default function AppRouter() {
             path="/others/items"
             element={
               <PermissionGate
-                any={[
-                  "items_can_edit",
-                  "items_can_delete",
-                  "items_can_add",
-                ]}
+                any={["items_can_edit", "items_can_delete", "items_can_add"]}
               >
                 <ItemsPage />
               </PermissionGate>

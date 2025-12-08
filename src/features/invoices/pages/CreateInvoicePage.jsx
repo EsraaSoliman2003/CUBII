@@ -46,6 +46,13 @@ export default function CreateInvoicePage() {
   // هل يقدر يشوف الأسعار
   const canViewPrices = user?.view_prices || user?.username === "admin";
 
+  // ✅ صلاحيات الإنشاء حسب نوع الفاتورة
+  const canCreateAdditions =
+    user?.create_additions || user?.username === "admin";
+
+  const canCreateInventoryOperations =
+    user?.create_inventory_operations || user?.username === "admin";
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -87,7 +94,21 @@ export default function CreateInvoicePage() {
   const showError = (message) =>
     setSnackbar({ open: true, message, type: "error" });
 
+  // ✅ هنا ربطنا نوع الفاتورة بالصلاحيات قبل الحفظ
   const onSaveInvoice = async () => {
+    // فواتير الإضافات (purchasesTypes) → create_additions
+    if (purchasesTypes.includes(invoice.type) && !canCreateAdditions) {
+      showError("ليست لديك صلاحية إنشاء فواتير الإضافات");
+      return;
+    }
+
+    // فواتير العمليات المخزونية (operationTypes) → create_inventory_operations
+    if (operationTypes.includes(invoice.type) && !canCreateInventoryOperations) {
+      showError("ليست لديك صلاحية إنشاء العمليات المخزونية");
+      return;
+    }
+
+    // لو النوع مش في الاتنين (مثلاً طلب شراء) نسيبه يعدي عادي
     try {
       await handleSaveInvoice();
       setSnackbar({
