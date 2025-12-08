@@ -13,7 +13,7 @@ export default function MachinesTable({
   loading,
 }) {
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden">
+    <div className="bg-white rounded-xl shadow-md ">
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm" dir="rtl">
           <thead className="bg-[#001473] text-white">

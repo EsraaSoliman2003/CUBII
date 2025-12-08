@@ -84,7 +84,7 @@ const InvoicesToolbar = ({
           طباعة التقرير
         </button>
       </div>
-
+{/* 
       <div className="flex items-center gap-2">
         {selectedCount > 0 && (
           <button
@@ -98,7 +98,7 @@ const InvoicesToolbar = ({
               : `حذف المحدد (${selectedCount})`}
           </button>
         )}
-      </div>
+      </div> */}
 
       {/* hidden ref just in case نحتاجه مستقبلًا */}
       <div ref={printRef} className="hidden" />

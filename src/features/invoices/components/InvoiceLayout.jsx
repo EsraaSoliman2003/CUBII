@@ -26,9 +26,7 @@ export default function InvoiceLayout({
 }) {
   return (
     <div
-      className={`bg-white border border-gray-200 rounded-md shadow-sm ${
-        isCreate ? "p-4 md:p-6" : "p-4"
-      } ${className}`}
+      className={`${isCreate ? "p-4 md:p-6" : "p-4"} ${className}`}
       dir="rtl"
     >
       <InvoiceHeader invoice={selectedInvoice} />

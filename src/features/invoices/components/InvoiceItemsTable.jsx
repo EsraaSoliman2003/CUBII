@@ -52,7 +52,7 @@ export default function InvoiceItemsTable({
 
   const showReturnedQtyColumn = isAmanatType && canEsterdad;
 
-  // تحميل الموردين
+  // === بقية اللوجيك كما هو بدون تغيير ===
   useEffect(() => {
     const shouldFetch = isEditing && isAdditionType && !justEditUnitPrice;
 
@@ -81,7 +81,6 @@ export default function InvoiceItemsTable({
     };
   }, [isEditing, isAdditionType, justEditUnitPrice]);
 
-  // تحميل المخازن
   useEffect(() => {
     const shouldFetch = isEditing && !justEditUnitPrice;
     if (!shouldFetch) return;
@@ -108,7 +107,6 @@ export default function InvoiceItemsTable({
     };
   }, [isEditing, justEditUnitPrice]);
 
-  // خريطة حسب الباركود (الاسم ممكن يتكرر، الباركود هو الفاصل)
   const warehouseByBarcode = useMemo(() => {
     const map = new Map();
     if (!Array.isArray(warehouse)) return map;
@@ -148,7 +146,7 @@ export default function InvoiceItemsTable({
       updatedItems[rowIndex] = {
         ...updatedItems[rowIndex],
         item_name: option.item_name,
-        barcode: option.barcode, // 👈 التمييز الأساسي
+        barcode: option.barcode,
         location: "",
         availableLocations: option.locations || [],
         quantity: 0,
@@ -166,7 +164,6 @@ export default function InvoiceItemsTable({
     const updatedItems = [...editingInvoice.items];
     const row = updatedItems[rowIndex];
 
-    // maxquantity من المخزون حسب الباركود + الموقع
     let maxquantity = 0;
     const whItem = warehouseByBarcode.get(row.barcode);
     if (whItem) {
@@ -271,20 +268,23 @@ export default function InvoiceItemsTable({
 
   return (
     <>
-      <div className="mt-3 border border-gray-300 rounded-md" dir="rtl">
+      {/* 🔹 مكمل لنفس الإطار: بدون مسافة، بوردر من تحت بس و Rounded من تحت */}
+      <div
+        className="border border-gray-300 border-t-0"
+        dir="rtl"
+      >
         <table className="w-full text-sm">
-          <thead className="bg-gray-200 text-gray-800">
+          <thead className="bg-[#dddddd] text-gray-800">
             <tr>
-              <th className="border border-gray-300 px-2 py-1 text-center w-10">
+              <th className="border border-gray-300 py-1 text-center w-10">
                 {isEditing && !justEditUnitPrice ? (
-                  <button
-                    type="button"
+                  <div
                     onClick={addRow}
-                    className="w-6 h-6 flex items-center justify-center rounded-full bg-blue-600 text-white text-base leading-none"
+                    className="text-[25px] cursor-pointer select-none"
                     title="إضافة سطر"
                   >
                     +
-                  </button>
+                  </div>
                 ) : (
                   "#"
                 )}
@@ -324,7 +324,6 @@ export default function InvoiceItemsTable({
 
           <tbody>
             {items.map((row, index) => {
-              // نفس الصنف من نسخة الفاتورة الأصلية (selectedInvoice)
               const originalRow =
                 Array.isArray(selectedInvoice?.items) &&
                 selectedInvoice.items[index]
@@ -344,18 +343,17 @@ export default function InvoiceItemsTable({
 
               return (
                 <tr key={index} className="even:bg-gray-50">
-                  {/* index + delete + استرداد */}
+                  {/* باقي الصفوف كما هي */}
                   <td className="border border-gray-300 px-2 py-1 text-center align-middle relative">
                     <span>{index + 1}</span>
                     {isEditing && !justEditUnitPrice && (
-                      <button
-                        type="button"
+                      <div
                         onClick={() => deleteRow(index)}
-                        className="absolute -left-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full text-red-600 text-xs hover:bg-red-50"
+                        className="absolute left-11 cursor-pointer top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center  text-red-600 text-xs hover:bg-red-50"
                         title="حذف السطر"
                       >
                         ✕
-                      </button>
+                      </div>
                     )}
                     {isAmanatType &&
                       canEsterdad &&
@@ -366,7 +364,7 @@ export default function InvoiceItemsTable({
                       selectedInvoice?.status !== "تم الاسترداد" && (
                         <button
                           type="button"
-                          className="absolute -left-8 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full text-blue-600 text-xs hover:bg-blue-50"
+                          className="absolute -left-8 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center  text-blue-600 text-xs hover:bg-blue-50"
                           title="استرداد"
                           onClick={() => {
                             setReturnItemIndex(index);
@@ -378,6 +376,7 @@ export default function InvoiceItemsTable({
                       )}
                   </td>
 
+                  {/* ... باقي الأعمدة بدون تغيير (نسخة من كودك الحالي) ... */}
                   {/* supplier */}
                   {isAdditionType && (
                     <td className="border border-gray-300 px-2 py-1">
@@ -444,7 +443,6 @@ export default function InvoiceItemsTable({
                   <td className="border border-gray-300 px-2 py-1 min-w-[180px]">
                     {isEditing && !justEditUnitPrice ? (
                       <CustomAutoCompleteField
-                        // isLoading={row.item_name === "" ? false : true}
                         values={row.availableLocations || []}
                         editingItem={row}
                         fieldName="location"
@@ -493,19 +491,16 @@ export default function InvoiceItemsTable({
                     )}
                   </td>
 
-                  {/* returned quantity */}
                   {showReturnedQtyColumn && (
                     <td className="border border-gray-300 px-2 py-1 text-center">
                       {totalReturned}
                     </td>
                   )}
 
-                  {/* transfer: new_location */}
                   {isTransferType && (
                     <td className="border border-gray-300 px-2 py-1 min-w-[180px]">
                       {isEditing && !justEditUnitPrice ? (
                         <CustomAutoCompleteField
-                          // isLoading={row.item_name === "" ? false : true}
                           values={(row.availableLocations || []).filter(
                             (l) => l.location !== row.location
                           )}
@@ -530,7 +525,6 @@ export default function InvoiceItemsTable({
                     </td>
                   )}
 
-                  {/* price + total */}
                   {canViewPrices &&
                     ((isCreate && isAdditionType) || !isCreate) && (
                       <>
@@ -574,7 +568,6 @@ export default function InvoiceItemsTable({
                       </>
                     )}
 
-                  {/* description */}
                   <td className="border border-gray-300 px-2 py-1 max-w-xs">
                     {isEditing && !justEditUnitPrice ? (
                       <textarea

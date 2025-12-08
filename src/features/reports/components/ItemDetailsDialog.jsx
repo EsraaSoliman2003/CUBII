@@ -376,7 +376,7 @@ export default function ItemDetailsDialog({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh]  flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700">
           <div className="flex items-center gap-3">
@@ -554,7 +554,7 @@ export default function ItemDetailsDialog({
                         </div>
                         
                         <div className="mt-3">
-                          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div className="h-2 bg-gray-200 rounded-full ">
                             <div 
                               className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
                               style={{ width: `${percentage}%` }}
@@ -587,7 +587,7 @@ export default function ItemDetailsDialog({
                   <p className="text-gray-500">لم يتم تسجيل أي سعر لهذا العنصر بعد</p>
                 </div>
               ) : (
-                <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                <div className="bg-white border border-gray-200 rounded-xl ">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>

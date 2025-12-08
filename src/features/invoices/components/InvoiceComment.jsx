@@ -14,7 +14,7 @@ export default function InvoiceComment({
   }
 
   return (
-    <div className="mt-3 border border-gray-200 rounded-md p-2 text-center text-sm">
+    <div className="mt-3 border border-gray-200  p-2 text-center text-sm">
       {isEditing ? (
         showCommentField && (
           <input

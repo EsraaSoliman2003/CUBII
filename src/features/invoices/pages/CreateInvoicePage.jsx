@@ -43,10 +43,9 @@ export default function CreateInvoicePage() {
     isSaving,
   } = useInvoiceForm();
 
-  // ✅ هنا بنحدد هل يقدر يشوف الأسعار ولا لا
+  // هل يقدر يشوف الأسعار
   const canViewPrices = user?.view_prices || user?.username === "admin";
 
-  // ✅ Hooks لازم تكون برا أي if
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -55,7 +54,7 @@ export default function CreateInvoicePage() {
 
   const { handlePrint } = useInvoicePrint();
 
-  // ⏳ تحميل بيانات المستخدم
+  // تحميل بيانات المستخدم
   if (userLoading) {
     return (
       <div className="w-full h-[60vh] flex items-center justify-center">
@@ -64,7 +63,6 @@ export default function CreateInvoicePage() {
     );
   }
 
-  // لو الـ user ملحقش يتجاب لأي سبب
   if (!user) {
     return (
       <div className="w-full h-[60vh] flex items-center justify-center text-red-600 font-semibold">
@@ -73,7 +71,7 @@ export default function CreateInvoicePage() {
     );
   }
 
-  // 🚫 صلاحيات
+  // صلاحيات
   if (
     !user?.create_additions &&
     !user?.create_inventory_operations &&
@@ -86,7 +84,6 @@ export default function CreateInvoicePage() {
     );
   }
 
-  // ========= دوال المساعدة للـ Snackbar =========
   const showError = (message) =>
     setSnackbar({ open: true, message, type: "error" });
 
@@ -116,12 +113,11 @@ export default function CreateInvoicePage() {
     }
   };
 
-  // ========= JSX =========
   return (
-    <div className="pt-4 pb-12 w-[90%] mx-auto mt-24" dir="rtl">
-      {/* اختيار النوع */}
+    <div className="min-h-screen pt-24 pb-10" dir="rtl">
+      {/* الشريط اللي فوق (مشتريات / عمليات / طلب شراء) فوق الورقة وعلى الخلفية الرمادي */}
       {!isInvoiceSaved && (
-        <div className="flex flex-wrap justify-center items-center gap-6 mb-4">
+        <div className="max-w-6xl mx-auto mb-4 flex flex-wrap justify-center items-center gap-6">
           {(user?.create_additions || user?.username === "admin") && (
             <TypeSelector
               label="مشتريات"
@@ -153,7 +149,7 @@ export default function CreateInvoicePage() {
             ) : (
               <button
                 type="button"
-                className="px-4 py-2 rounded-md border border-red-500 text-red-600 text-sm"
+                className="px-4 py-2 rounded-md border border-red-500 text-red-600 text-sm bg-white"
                 onClick={() => setIsPurchaseOrder(false)}
               >
                 إلغاء
@@ -163,134 +159,53 @@ export default function CreateInvoicePage() {
         </div>
       )}
 
-      <div className="flex gap-5 overflow-x-auto">
-        {/* الفاتورة الرئيسية */}
-        <div className={isPurchaseOrder ? "flex-1" : "flex-[1.2]"}>
-          <InvoiceLayout
-            className="printable-invoice"
-            selectedInvoice={{
-              ...invoice,
-              id: invoice.id ?? voucherNumber?.last_id,
-              date,
-              time,
-              employee_name: user?.username,
-            }}
-            isEditing={editingMode}
-            editingInvoice={invoice}
-            setEditingInvoice={setInvoice}
-            selectedNowType={selectedNowType}
-            addRow={() => addRow(false)}
-            deleteRow={(i) => removeRow(i, false)}
-            isPurchasesType={!!purchasesType}
-            showCommentField={showCommentField}
-            isCreate
-            canViewPrices={canViewPrices}
-          />
-
-          <div className="mt-4 flex flex-wrap justify-between gap-3">
-            {!isInvoiceSaved ? (
-              <>
-                <button
-                  type="button"
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold flex-1 min-w-[120px] ${
-                    showCommentField
-                      ? "border border-red-500 text-red-600 bg-white"
-                      : "bg-green-600 text-white"
-                  }`}
-                  onClick={() => setShowCommentField(!showCommentField)}
-                >
-                  {showCommentField ? "إلغاء التعليق" : "إضافة تعليق"}
-                </button>
-
-                <button
-                  type="button"
-                  disabled={isSaving}
-                  className="px-4 py-2 rounded-lg text-sm font-semibold flex-1 min-w-[120px] bg-blue-600 text-white disabled:opacity-60"
-                  onClick={onSaveInvoice}
-                >
-                  {isSaving ? "جاري الحفظ..." : "تأكيد الحفظ"}
-                </button>
-
-                <button
-                  type="button"
-                  className="px-4 py-2 rounded-lg text-sm font-semibold flex-1 min-w-[120px] bg-cyan-600 text-white"
-                  onClick={clearInvoice}
-                >
-                  فاتورة جديدة
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  className="px-4 py-2 rounded-lg text-sm font-semibold flex-1 min-w-[120px] bg-blue-600 text-white"
-                  onClick={clearInvoice}
-                >
-                  فاتورة جديدة
-                </button>
-                <button
-                  type="button"
-                  className="px-4 py-2 rounded-lg text-sm font-semibold flex-1 min-w-[120px] bg-green-600 text-white"
-                  onClick={() => handlePrint("printable-invoice")}
-                >
-                  طباعة الفاتورة
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* طلب الشراء */}
-        {isPurchaseOrder && (
-          <div className="flex-1">
+      {/* ورقة الفاتورة البيضاء في النص */}
+      <div className="max-w-6xl mx-auto bg-white border border-gray-300 px-4 md:px-8 py-6">
+        <div className="flex gap-5">
+          {/* الفاتورة الرئيسية */}
+          <div className={isPurchaseOrder ? "flex-1" : "flex-[1.2]"}>
             <InvoiceLayout
-              className="printable-purchase-order"
+              className="printable-invoice"
               selectedInvoice={{
-                ...purchaseOrderInvoice,
-                id: purchaseOrderInvoice.id ?? voucherNumber?.last_id,
-                type: "طلب شراء",
+                ...invoice,
+                id: invoice.id ?? voucherNumber?.last_id,
                 date,
                 time,
                 employee_name: user?.username,
               }}
-              isEditing={isPurchaseOrderEditing}
-              editingInvoice={purchaseOrderInvoice}
-              setEditingInvoice={setPurchaseOrderInvoice}
-              selectedNowType={{ type: "طلب شراء" }}
-              addRow={() => addRow(true)}
-              deleteRow={(i) => removeRow(i, true)}
-              isPurchasesType={false}
-              showCommentField={showPurchaseOrderCommentField}
+              isEditing={editingMode}
+              editingInvoice={invoice}
+              setEditingInvoice={setInvoice}
+              selectedNowType={selectedNowType}
+              addRow={() => addRow(false)}
+              deleteRow={(i) => removeRow(i, false)}
+              isPurchasesType={!!purchasesType}
+              showCommentField={showCommentField}
               isCreate
               canViewPrices={canViewPrices}
             />
 
-            <div className="mt-4 flex flex-wrap justify-between gap-3">
-              {!isPurchaseOrderSaved ? (
+            {/* أزرار الفاتورة تحت الورقة */}
+            <div className="mt-6 flex flex-wrap justify-between gap-3">
+              {!isInvoiceSaved ? (
                 <>
                   <button
                     type="button"
                     className={`px-4 py-2 rounded-lg text-sm font-semibold flex-1 min-w-[120px] ${
-                      showPurchaseOrderCommentField
+                      showCommentField
                         ? "border border-red-500 text-red-600 bg-white"
                         : "bg-green-600 text-white"
                     }`}
-                    onClick={() =>
-                      setShowPurchaseOrderCommentField(
-                        !showPurchaseOrderCommentField
-                      )
-                    }
+                    onClick={() => setShowCommentField(!showCommentField)}
                   >
-                    {showPurchaseOrderCommentField
-                      ? "إلغاء التعليق"
-                      : "إضافة تعليق"}
+                    {showCommentField ? "إلغاء التعليق" : "إضافة تعليق"}
                   </button>
 
                   <button
                     type="button"
                     disabled={isSaving}
                     className="px-4 py-2 rounded-lg text-sm font-semibold flex-1 min-w-[120px] bg-blue-600 text-white disabled:opacity-60"
-                    onClick={onSavePO}
+                    onClick={onSaveInvoice}
                   >
                     {isSaving ? "جاري الحفظ..." : "تأكيد الحفظ"}
                   </button>
@@ -298,9 +213,9 @@ export default function CreateInvoicePage() {
                   <button
                     type="button"
                     className="px-4 py-2 rounded-lg text-sm font-semibold flex-1 min-w-[120px] bg-cyan-600 text-white"
-                    onClick={clearPurchaseOrder}
+                    onClick={clearInvoice}
                   >
-                    طلب جديد
+                    فاتورة جديدة
                   </button>
                 </>
               ) : (
@@ -308,22 +223,110 @@ export default function CreateInvoicePage() {
                   <button
                     type="button"
                     className="px-4 py-2 rounded-lg text-sm font-semibold flex-1 min-w-[120px] bg-blue-600 text-white"
-                    onClick={clearPurchaseOrder}
+                    onClick={clearInvoice}
                   >
-                    طلب جديد
+                    فاتورة جديدة
                   </button>
                   <button
                     type="button"
                     className="px-4 py-2 rounded-lg text-sm font-semibold flex-1 min-w-[120px] bg-green-600 text-white"
-                    onClick={() => handlePrint("printable-purchase-order")}
+                    onClick={() => handlePrint("printable-invoice")}
                   >
-                    طباعة الطلب
+                    طباعة الفاتورة
                   </button>
                 </>
               )}
             </div>
           </div>
-        )}
+
+          {/* طلب الشراء جنب الفاتورة لو مفعّل */}
+          {isPurchaseOrder && (
+            <div className="flex-1">
+              <InvoiceLayout
+                className="printable-purchase-order"
+                selectedInvoice={{
+                  ...purchaseOrderInvoice,
+                  id: purchaseOrderInvoice.id ?? voucherNumber?.last_id,
+                  type: "طلب شراء",
+                  date,
+                  time,
+                  employee_name: user?.username,
+                }}
+                isEditing={isPurchaseOrderEditing}
+                editingInvoice={purchaseOrderInvoice}
+                setEditingInvoice={setPurchaseOrderInvoice}
+                selectedNowType={{ type: "طلب شراء" }}
+                addRow={() => addRow(true)}
+                deleteRow={(i) => removeRow(i, true)}
+                isPurchasesType={false}
+                showCommentField={showPurchaseOrderCommentField}
+                isCreate
+                canViewPrices={canViewPrices}
+              />
+
+              {/* أزرار طلب الشراء */}
+              <div className="mt-6 flex flex-wrap justify-between gap-3">
+                {!isPurchaseOrderSaved ? (
+                  <>
+                    <button
+                      type="button"
+                      className={`px-4 py-2 rounded-lg text-sm font-semibold flex-1 min-w-[120px] ${
+                        showPurchaseOrderCommentField
+                          ? "border border-red-500 text-red-600 bg-white"
+                          : "bg-green-600 text-white"
+                      }`}
+                      onClick={() =>
+                        setShowPurchaseOrderCommentField(
+                          !showPurchaseOrderCommentField
+                        )
+                      }
+                    >
+                      {showPurchaseOrderCommentField
+                        ? "إلغاء التعليق"
+                        : "إضافة تعليق"}
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={isSaving}
+                      className="px-4 py-2 rounded-lg text-sm font-semibold flex-1 min-w-[120px] bg-blue-600 text-white disabled:opacity-60"
+                      onClick={onSavePO}
+                    >
+                      {isSaving ? "جاري الحفظ..." : "تأكيد الحفظ"}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="px-4 py-2 rounded-lg text-sm font-semibold flex-1 min-w-[120px] bg-cyan-600 text-white"
+                      onClick={clearPurchaseOrder}
+                    >
+                      طلب جديد
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="px-4 py-2 rounded-lg text-sm font-semibold flex-1 min-w-[120px] bg-blue-600 text-white"
+                      onClick={clearPurchaseOrder}
+                    >
+                      طلب جديد
+                    </button>
+                    <button
+                      type="button"
+                      className="px-4 py-2 rounded-lg text-sm font-semibold flex-1 min-w-[120px] bg-green-600 text-white"
+                      onClick={() =>
+                        handlePrint("printable-purchase-order")
+                      }
+                    >
+                      طباعة الطلب
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <SnackBar

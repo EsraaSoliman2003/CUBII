@@ -66,7 +66,7 @@ export default function OriginalInvoiceDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-lg shadow-lg max-w-5xl w-full max-h-[90vh] overflow-auto p-4">
+      <div className="bg-white  shadow-lg max-w-5xl w-full max-h-[90vh] overflow-auto p-4">
         <div className="flex justify-between items-center mb-3" dir="rtl">
           <h2 className="text-base font-semibold text-gray-800">
             الفاتورة الأصلية
@@ -82,7 +82,7 @@ export default function OriginalInvoiceDialog({
 
         {isLoading ? (
           <div className="flex justify-center py-10">
-            <div className="h-6 w-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            <div className="h-6 w-6 border-2 border-blue-600 border-t-transparent  animate-spin" />
           </div>
         ) : isError || !transformed ? (
           <div className="text-center text-sm text-red-600">

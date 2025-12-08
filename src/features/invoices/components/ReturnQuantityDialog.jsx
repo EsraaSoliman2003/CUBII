@@ -132,7 +132,7 @@ export default function ReturnQuantityDialog({
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
         <div
-          className="bg-white rounded-lg shadow-lg max-w-sm w-full p-4"
+          className="bg-white  shadow-lg max-w-sm w-full p-4"
           dir="rtl"
         >
           <h2 className="text-base font-semibold text-gray-800 mb-3 text-center">
@@ -147,7 +147,7 @@ export default function ReturnQuantityDialog({
           <input
             type="number"
             min="0"
-            className="w-full border border-gray-300 rounded-md px-2 py-2 text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300  px-2 py-2 text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
           />
@@ -157,14 +157,14 @@ export default function ReturnQuantityDialog({
               type="button"
               onClick={handleConfirm}
               disabled={loading}
-              className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm disabled:opacity-50"
+              className="px-4 py-2  bg-blue-600 text-white text-sm disabled:opacity-50"
             >
               {loading ? "جارٍ الحفظ..." : "تأكيد"}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-md bg-red-600 text-white text-sm"
+              className="px-4 py-2  bg-red-600 text-white text-sm"
             >
               إلغاء
             </button>

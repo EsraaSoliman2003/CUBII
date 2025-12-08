@@ -32,7 +32,8 @@ export default function InvoiceMetaInfo({
 
   const [isMachinesLoading, setIsMachinesLoading] = useState(false);
   const [isMechanismsLoading, setIsMechanismsLoading] = useState(false);
-  const [isInvoiceNumbersLoading, setIsInvoiceNumbersLoading] = useState(false);
+  const [isInvoiceNumbersLoading, setIsInvoiceNumbersLoading] =
+    useState(false);
 
   useEffect(() => {
     if (!isEditing || justEditUnitPrice) return;
@@ -91,7 +92,11 @@ export default function InvoiceMetaInfo({
 
   return (
     <>
-      <div className="mt-3 border border-gray-300 rounded-md" dir="rtl">
+      {/* 🔹 نفس البوردر مع Rounded من فوق فقط و بدون مسافة تحت */}
+      <div
+        className="border border-gray-300 border-b-0"
+        dir="rtl"
+      >
         <table className="w-full text-sm">
           <tbody>
             {isReturnType && (
@@ -116,7 +121,7 @@ export default function InvoiceMetaInfo({
                         type="button"
                         disabled={!editingInvoice.original_invoice_id}
                         onClick={handleOpenOriginalInvoice}
-                        className="px-3 py-1 rounded-md text-xs bg-blue-600 text-white disabled:opacity-40"
+                        className="px-3 py-1 text-xs bg-blue-600 text-white disabled:opacity-40"
                       >
                         عرض
                       </button>
@@ -131,7 +136,7 @@ export default function InvoiceMetaInfo({
             {!isAdditionType && (
               <>
                 <tr>
-                  <td className="border border-gray-300 px-2 py-2 w-40 text-center font-semibold bg-gray-50">
+                  <td className="border border-gray-300 px-2 py-2 w-40 text-center font-semibold bg-[#dddddd]">
                     اسم الماكينة
                   </td>
                   <td className="border border-gray-300 px-2 py-2">
@@ -152,7 +157,7 @@ export default function InvoiceMetaInfo({
                 </tr>
 
                 <tr>
-                  <td className="border border-gray-300 px-2 py-2 w-40 text-center font-semibold bg-gray-50">
+                  <td className="border border-gray-300 px-2 py-2 w-40 text-center font-semibold bg-[#dddddd]">
                     اسم الميكانيزم
                   </td>
                   <td className="border border-gray-300 px-2 py-2">

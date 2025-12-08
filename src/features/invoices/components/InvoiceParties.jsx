@@ -24,7 +24,7 @@ export default function InvoiceParties({
         {isEditing ? (
           <input
             type="text"
-            className="w-3/4 border border-gray-300 rounded-md px-2 py-1 text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-3/4 border border-gray-300  px-2 py-1 text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={target.client_name || ""}
             onChange={(e) =>
               setEditingInvoice({

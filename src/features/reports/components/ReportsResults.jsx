@@ -423,7 +423,7 @@ function InvoicesTable({
   onOpenInvoiceDetails,
 }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-lg ">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gradient-to-r from-gray-800 to-gray-900">
@@ -600,7 +600,7 @@ function InvoicesTable({
 // ===== جدول المخازن =====
 function ItemsTable({ rows, onOpenItemDetails }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-lg ">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gradient-to-r from-gray-800 to-gray-900">

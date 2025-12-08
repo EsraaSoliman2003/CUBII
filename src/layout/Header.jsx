@@ -208,7 +208,7 @@ export default function Header() {
                           </button>
 
                           {isResourcesOpen && (
-                            <div className="absolute right-0 mt-2 w-44 bg-white/95 backdrop-blur-md text-slate-900 rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+                            <div className="absolute right-0 mt-2 w-44 bg-white/95 backdrop-blur-md text-slate-900 rounded-2xl shadow-xl border border-slate-100 ">
                               <div className="px-3 py-2 text-xs font-semibold text-slate-500 border-b border-slate-100">
                                 إدارة الموارد
                               </div>
@@ -309,7 +309,7 @@ export default function Header() {
             onClick={() => setIsDrawerOpen(false)}
           />
           {/* البانل */}
-          <div className="absolute right-0 top-0 h-full w-72 max-w-[80%] bg-white text-black flex flex-col shadow-2xl rounded-s-2xl overflow-hidden">
+          <div className="absolute right-0 top-0 h-full w-72 max-w-[80%] bg-white text-black flex flex-col shadow-2xl rounded-s-2xl ">
             {/* الهيدر داخل الـ Drawer */}
             <div className="flex items-center justify-between px-4 pt-4 pb-2">
               <div className="flex items-center gap-2">

@@ -21,7 +21,7 @@ function buildFlags(options) {
 
 function PermissionGroup({ label, values, sectionKey, options, onToggle }) {
   return (
-    <div className="border border-slate-200 rounded-lg overflow-hidden mb-3 bg-slate-50">
+    <div className="border border-slate-200 rounded-lg  mb-3 bg-slate-50">
       <div className="bg-slate-200/70 px-3 py-2 text-sm font-semibold text-slate-700">
         {label}
       </div>
@@ -169,7 +169,7 @@ export default function AddUserModal({ open, onClose, onCreated, onMessage }) {
       onClick={handleBackdropClick} // إغلاق عند الضغط على الخلفية
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh]  flex flex-col"
         dir="rtl"
         onClick={(e) => e.stopPropagation()} // منع الإغلاق عند الضغط داخل الكارت
       >
