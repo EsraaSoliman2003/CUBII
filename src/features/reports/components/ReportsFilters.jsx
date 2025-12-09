@@ -58,19 +58,17 @@ export default function ReportsFilters({
   const toDateRef = useRef(null);
 
   return (
-    <div className="w-full flex justify-center">
+    <div className="w-full flex justify-center items-center min-h-[70vh]">
       <div
         dir="rtl"
         className="w-[90%] md:w-[85%] lg:w-[80%] xl:w-[70%] 
                bg-white border border-gray-200 rounded-md shadow-md 
                px-4 md:px-6 py-5"
       >
-        {/* العنوان */}
         <div className="text-center mb-4">
           <h2 className="text-xl font-bold text-[#032766]">تقارير</h2>
         </div>
 
-        {/* نوع التقرير */}
         <div className="flex justify-center mb-6">
           <div className="w-full max-w-xs">
             <select
@@ -85,12 +83,9 @@ export default function ReportsFilters({
           </div>
         </div>
 
-        {/* فلاتر الفواتير */}
         {reportType === "فواتير" && (
           <>
-            {/* الصف الأول: الموظف - النوع - رقم الفاتورة - اسم العميل */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2.5 mb-3">
-              {/* اسم الموظف */}
               <CustomAutoCompleteField
                 isLoading={loadingUsers}
                 values={employeeOptions}
@@ -104,7 +99,6 @@ export default function ReportsFilters({
                 }
               />
 
-              {/* نوع العملية */}
               <CustomAutoCompleteField
                 values={INVOICE_TYPES}
                 editingItem={{ type: filters.type }}
@@ -115,7 +109,6 @@ export default function ReportsFilters({
                 setEditingItem={(row) => onFilterChange("type", row.type || "")}
               />
 
-              {/* رقم الفاتورة */}
               <NumberInput
                 value={filters.invoice_id || ""}
                 onChange={(e) => onFilterChange("invoice_id", e.target.value)}
@@ -123,7 +116,6 @@ export default function ReportsFilters({
                 placeholder="رقم الفاتورة"
               />
 
-              {/* اسم العميل */}
               <input
                 value={filters.client_name || ""}
                 onChange={(e) => onFilterChange("client_name", e.target.value)}
@@ -133,7 +125,6 @@ export default function ReportsFilters({
               />
             </div>
 
-            {/* المراجع – صف كامل */}
             <div className="grid grid-cols-1 mb-3">
               <CustomAutoCompleteField
                 isLoading={loadingUsers}
@@ -154,9 +145,7 @@ export default function ReportsFilters({
               />
             </div>
 
-            {/* عامل المخزن / الماكينة / الميكانيزم – 3 أعمدة تتمدد بالكامل */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 mb-3">
-              {/* عامل المخزن */}
               <CustomAutoCompleteField
                 isLoading={loadingUsers}
                 values={employeeOptions}
@@ -175,7 +164,6 @@ export default function ReportsFilters({
                 }
               />
 
-              {/* الماكينة */}
               <CustomAutoCompleteField
                 isLoading={loadingMachines}
                 values={machinesOptions}
@@ -189,7 +177,6 @@ export default function ReportsFilters({
                 }
               />
 
-              {/* الميكانيزم */}
               <CustomAutoCompleteField
                 isLoading={loadingMechanisms}
                 values={mechanismsOptions}
@@ -204,9 +191,7 @@ export default function ReportsFilters({
               />
             </div>
 
-            {/* اسم المورد / الحالة – صف 2 أعمدة */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-4">
-              {/* اسم المورد */}
               <CustomAutoCompleteField
                 isLoading={loadingSuppliers}
                 values={suppliersOptions}
@@ -220,7 +205,6 @@ export default function ReportsFilters({
                 }
               />
 
-              {/* الحالة */}
               <CustomAutoCompleteField
                 values={STATUS_TYPES}
                 editingItem={{ status: filters.status }}
@@ -234,9 +218,7 @@ export default function ReportsFilters({
               />
             </div>
 
-            {/* التاريخ من / إلى */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-              {/* من تاريخ */}
               <div>
                 <label className="block text-[11px] text-gray-700 mb-0.5">
                   من تاريخ <span className="text-red-500">*</span>
@@ -269,7 +251,6 @@ export default function ReportsFilters({
                 </div>
               </div>
 
-              {/* إلى تاريخ */}
               <div>
                 <label className="block text-[11px] text-gray-700 mb-0.5">
                   إلى تاريخ <span className="text-red-500">*</span>
@@ -305,7 +286,6 @@ export default function ReportsFilters({
           </>
         )}
 
-        {/* فلاتر المخازن */}
         {reportType === "مخازن" && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
@@ -378,7 +358,6 @@ export default function ReportsFilters({
           </>
         )}
 
-        {/* زر البحث */}
         {reportType && (
           <div className="mt-2">
             <button

@@ -11,7 +11,7 @@ import { getWarehouses } from "../../../api/modules/warehousesApi";
 const STATUS_AR_TO_EN = {
   "لم تراجع": "draft",
   "لم تؤكد": "accreditation",
-  "تم": "confirmed",
+  تم: "confirmed",
   "استرداد جزئي": "partially_returned",
   "تم الاسترداد": "returned",
 };
@@ -65,7 +65,13 @@ export function useReportsLogic(
       !!(initialFilters.fromDate || initialFilters.start_date) &&
       !!(initialFilters.toDate || initialFilters.end_date)
     );
-  }, [initialReportType, initialFilters.fromDate, initialFilters.toDate, initialFilters.start_date, initialFilters.end_date]);
+  }, [
+    initialReportType,
+    initialFilters.fromDate,
+    initialFilters.toDate,
+    initialFilters.start_date,
+    initialFilters.end_date,
+  ]);
 
   const [isInitialLoadCompleted, setIsInitialLoadCompleted] = useState(false);
 
@@ -133,9 +139,7 @@ export function useReportsLogic(
       setLoadingSuppliers(true);
       getSuppliers({ page: 0, page_size: 1000, all: true })
         .then((res) => setSuppliers(res.data.suppliers || res.data || []))
-        .catch(() =>
-          openSnackbar("فشل تحميل الموردين، حاول مرة أخرى", "error")
-        )
+        .catch(() => openSnackbar("فشل تحميل الموردين، حاول مرة أخرى", "error"))
         .finally(() => setLoadingSuppliers(false));
     }
 
@@ -143,9 +147,7 @@ export function useReportsLogic(
     if (reportType === "مخازن") {
       setLoadingItems(true);
       getWarehouses({ page: 0, page_size: 1000, all: true })
-        .then((res) =>
-          setWarehouseItems(res.data.warehouses || res.data || [])
-        )
+        .then((res) => setWarehouseItems(res.data.warehouses || res.data || []))
         .catch(() =>
           openSnackbar("فشل تحميل بيانات المخازن، حاول مرة أخرى", "error")
         )
@@ -218,10 +220,7 @@ export function useReportsLogic(
   const handleFilterChange = (field, value) => {
     setFilters((prev) => ({
       ...prev,
-      [field]:
-        field === "status"
-          ? STATUS_AR_TO_EN[value] || ""
-          : value,
+      [field]: field === "status" ? STATUS_AR_TO_EN[value] || "" : value,
     }));
 
     if (field === "fromDate" || field === "toDate") {
@@ -280,8 +279,8 @@ export function useReportsLogic(
         reportType === "فواتير"
           ? "invoice"
           : reportType === "مخازن"
-          ? "item"
-          : "invoice";
+            ? "item"
+            : "invoice";
 
       const params = {
         reportType: apiReportType,
@@ -306,14 +305,39 @@ export function useReportsLogic(
 
       getFilteredReports(params)
         .then((res) => {
-          const data = res.data || {};
+          const raw = res.data;
+
+          if (Array.isArray(raw)) {
+            const list = raw;
+
+            setPage(0);
+            setResults(list);
+            setTotalPages(1);
+            setTotalItems(list.length);
+
+            if (list.length === 0) {
+              openSnackbar(
+                "لم يتم العثور على نتائج مطابقة لمعايير البحث",
+                "info"
+              );
+            } else {
+              openSnackbar(`تم العثور على ${list.length} نتيجة`, "success");
+            }
+
+            return;
+          }
+
+          const data = raw || {};
           const apiPage = (data.page || 1) - 1;
           const apiPageSize = data.page_size || pageSize;
           const apiTotalPages = data.pages || data.total_pages || 1;
-          const apiTotal = data.total || (data.results || []).length || 0;
+          const apiTotal =
+            data.total ||
+            (Array.isArray(data.results) ? data.results.length : 0) ||
+            0;
 
           setPage(apiPage);
-          setResults(data.results || []);
+          setResults(Array.isArray(data.results) ? data.results : []);
           setTotalPages(apiTotalPages);
           setTotalItems(apiTotal);
 
@@ -338,7 +362,6 @@ export function useReportsLogic(
     [reportType, filters, pageSize]
   );
 
-  // البحث التلقائي عند الفتح مباشرة لو فيه params في الـ URL
   useEffect(() => {
     if (hasInitialSearch && !isInitialLoadCompleted && reportType) {
       const timer = setTimeout(() => {

@@ -144,29 +144,28 @@ export default function ReportsLayout() {
   const onResultsPage = location.pathname.startsWith("/reports/search");
 
   return (
-    <div className="w-[95%] mx-auto pt-24 pb-10" dir="rtl">
+    <div className="w-[95%] mx-auto pt-10 pb-10" dir="rtl">
       {/* الهيدر */}
-      <div className="flex items-center justify-between mb-4">
-        {/* زر نسخ رابط البحث يظهر فقط في صفحة النتائج */}
+      <div className="flex items-center justify-between mb-2">
         {onResultsPage && (
           <button
             type="button"
             onClick={handleCopySearchLink}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+            className="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 
+                 transition-colors flex items-center gap-1.5 text-xs"
           >
             <svg
-              className="w-5 h-5"
+              className="w-4 h-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
             >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth="2"
                 d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-              ></path>
+              />
             </svg>
             نسخ رابط البحث
           </button>
