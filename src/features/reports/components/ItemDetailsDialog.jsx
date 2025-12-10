@@ -54,7 +54,7 @@ export default function ItemDetailsDialog({
     } else if (activeTab === "prices") {
       headers = [];
       if (canViewPrices) headers.push("سعر الوحدة");
-      headers.push("الكمية", "التاريخ", "نوع العملية", "# الفاتورة");
+      headers.push("الكمية", "التاريخ", "# الفاتورة");
 
       rows = prices.map((p) => {
         const base = [];
@@ -62,7 +62,6 @@ export default function ItemDetailsDialog({
         base.push(
           p.quantity ?? "-",
           p.created_at ? p.created_at.split(" ")[0] : "-",
-          p.type || "-",
           p.invoice_id ?? "-"
         );
         return base;
@@ -156,7 +155,6 @@ export default function ItemDetailsDialog({
           ${canViewPrices ? "<th>سعر الوحدة</th>" : ""}
           <th>الكمية</th>
           <th>التاريخ</th>
-          <th>نوع العملية</th>
           <th># الفاتورة</th>
         </tr>
       `;
@@ -167,7 +165,6 @@ export default function ItemDetailsDialog({
           ${canViewPrices ? `<td>${p.unit_price ?? "-"}</td>` : ""}
           <td>${p.quantity ?? "-"}</td>
           <td>${p.created_at ? p.created_at.split(" ")[0] : "-"}</td>
-          <td>${p.type || "-"}</td>
           <td>${p.invoice_id ?? "-"}</td>
         </tr>
       `
@@ -261,23 +258,20 @@ export default function ItemDetailsDialog({
     if (activeTab === "prices") {
       return (
         <tr>
-          {canViewPrices && (
-            <th className="px-4 py-2 text-center text-xs font-semibold text-white">
-              سعر الوحدة
-            </th>
-          )}
           <th className="px-4 py-2 text-center text-xs font-semibold text-white">
-            الكمية
+            # الفاتورة
           </th>
           <th className="px-4 py-2 text-center text-xs font-semibold text-white">
             التاريخ
           </th>
           <th className="px-4 py-2 text-center text-xs font-semibold text-white">
-            نوع العملية
+            الكمية
           </th>
-          <th className="px-4 py-2 text-center text-xs font-semibold text-white">
-            # الفاتورة
-          </th>
+          {canViewPrices && (
+            <th className="px-4 py-2 text-center text-xs font-semibold text-white">
+              سعر الوحدة
+            </th>
+          )}
         </tr>
       );
     }
@@ -349,7 +343,7 @@ export default function ItemDetailsDialog({
         return (
           <tr>
             <td
-              colSpan={canViewPrices ? 5 : 4}
+              colSpan={canViewPrices ? 4 : 3}
               className="px-4 py-4 text-center text-sm text-gray-500"
             >
               لا توجد أسعار مسجلة لهذا العنصر
@@ -360,23 +354,20 @@ export default function ItemDetailsDialog({
 
       return prices.map((p, idx) => (
         <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-slate-50/60"}>
-          {canViewPrices && (
-            <td className="px-4 py-2 text-center text-xs text-gray-800">
-              {(p.unit_price || 0).toLocaleString()}
-            </td>
-          )}
           <td className="px-4 py-2 text-center text-xs text-gray-800">
-            {p.quantity ?? "-"}
+            {p.invoice_id ?? "-"}
           </td>
           <td className="px-4 py-2 text-center text-xs text-gray-800">
             {p.created_at ? p.created_at.split(" ")[0] : "-"}
           </td>
           <td className="px-4 py-2 text-center text-xs text-gray-800">
-            {p.type || "-"}
+            {p.quantity ?? "-"}
           </td>
-          <td className="px-4 py-2 text-center text-xs text-gray-800">
-            {p.invoice_id ?? "-"}
-          </td>
+          {canViewPrices && (
+            <td className="px-4 py-2 text-center text-xs text-gray-800">
+              {(p.unit_price || 0).toLocaleString()}
+            </td>
+          )}
         </tr>
       ));
     }
