@@ -62,9 +62,7 @@ export default function InvoiceItemsTable({
     }
 
     if (isEditing && selectedInvoice && !originalInvoiceRef.current) {
-      originalInvoiceRef.current = JSON.parse(
-        JSON.stringify(selectedInvoice)
-      );
+      originalInvoiceRef.current = JSON.parse(JSON.stringify(selectedInvoice));
     }
   }, [isCreate, isEditing, selectedInvoice]);
 
@@ -394,7 +392,7 @@ export default function InvoiceItemsTable({
                     {isEditing && !justEditUnitPrice && (
                       <div
                         onClick={() => deleteRow(index)}
-                        className="absolute left-11 cursor-pointer top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center  text-red-600 text-xs hover:bg-red-50"
+                        className="absolute left-9 cursor-pointer top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center  text-red-600 text-xs"
                         title="حذف السطر"
                       >
                         ✕
