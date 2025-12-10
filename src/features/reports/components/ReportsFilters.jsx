@@ -57,6 +57,22 @@ export default function ReportsFilters({
   const fromDateRef = useRef(null);
   const toDateRef = useRef(null);
 
+  const handleOpenFromDate = () => {
+    if (fromDateRef.current?.showPicker) {
+      fromDateRef.current.showPicker();
+    } else {
+      fromDateRef.current?.focus();
+    }
+  };
+
+  const handleOpenToDate = () => {
+    if (toDateRef.current?.showPicker) {
+      toDateRef.current.showPicker();
+    } else {
+      toDateRef.current?.focus();
+    }
+  };
+
   return (
     <div className="w-full flex justify-center items-center min-h-[70vh]">
       <div
@@ -226,13 +242,7 @@ export default function ReportsFilters({
 
                 <div
                   className="w-full cursor-pointer"
-                  onClick={() => {
-                    if (fromDateRef.current?.showPicker) {
-                      fromDateRef.current.showPicker();
-                    } else {
-                      fromDateRef.current?.focus();
-                    }
-                  }}
+                  onClick={handleOpenFromDate}
                 >
                   <input
                     ref={fromDateRef}
@@ -258,13 +268,7 @@ export default function ReportsFilters({
 
                 <div
                   className="w-full cursor-pointer"
-                  onClick={() => {
-                    if (toDateRef.current?.showPicker) {
-                      toDateRef.current.showPicker();
-                    } else {
-                      toDateRef.current?.focus();
-                    }
-                  }}
+                  onClick={handleOpenToDate}
                 >
                   <input
                     ref={toDateRef}
@@ -321,38 +325,52 @@ export default function ReportsFilters({
                 <label className="block text-[11px] text-gray-700 mb-0.5">
                   من تاريخ <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="date"
-                  value={filters.fromDate || ""}
-                  onChange={(e) => onFilterChange("fromDate", e.target.value)}
-                  max={filters.toDate || undefined}
-                  className={`w-full h-9 bg-white text-right text-xs px-2 rounded-md border ${
-                    errors.fromDate ? "border-red-500" : "border-gray-300"
-                  } focus:outline-none focus:ring-1 ${
-                    errors.fromDate
-                      ? "focus:ring-red-500"
-                      : "focus:ring-[#032766]"
-                  }`}
-                />
+
+                <div
+                  className="w-full cursor-pointer"
+                  onClick={handleOpenFromDate}
+                >
+                  <input
+                    ref={fromDateRef}
+                    type="date"
+                    value={filters.fromDate || ""}
+                    onChange={(e) => onFilterChange("fromDate", e.target.value)}
+                    max={filters.toDate || undefined}
+                    className={`w-full h-9 bg-white text-right text-xs px-2 rounded-md border ${
+                      errors.fromDate ? "border-red-500" : "border-gray-300"
+                    } focus:outline-none focus:ring-1 ${
+                      errors.fromDate
+                        ? "focus:ring-red-500"
+                        : "focus:ring-[#032766]"
+                    }`}
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="block text-[11px] text-gray-700 mb-0.5">
                   إلى تاريخ <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="date"
-                  value={filters.toDate || ""}
-                  onChange={(e) => onFilterChange("toDate", e.target.value)}
-                  min={filters.fromDate || undefined}
-                  className={`w-full h-9 bg-white text-right text-xs px-2 rounded-md border ${
-                    errors.toDate ? "border-red-500" : "border-gray-300"
-                  } focus:outline-none focus:ring-1 ${
-                    errors.toDate
-                      ? "focus:ring-red-500"
-                      : "focus:ring-[#032766]"
-                  }`}
-                />
+
+                <div
+                  className="w-full cursor-pointer"
+                  onClick={handleOpenToDate}
+                >
+                  <input
+                    ref={toDateRef}
+                    type="date"
+                    value={filters.toDate || ""}
+                    onChange={(e) => onFilterChange("toDate", e.target.value)}
+                    min={filters.fromDate || undefined}
+                    className={`w-full h-9 bg-white text-right text-xs px-2 rounded-md border ${
+                      errors.toDate ? "border-red-500" : "border-gray-300"
+                    } focus:outline-none focus:ring-1 ${
+                      errors.toDate
+                        ? "focus:ring-red-500"
+                        : "focus:ring-[#032766]"
+                    }`}
+                  />
+                </div>
               </div>
             </div>
           </>
