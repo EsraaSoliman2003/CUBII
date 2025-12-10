@@ -5,8 +5,9 @@ import { getFilteredReports } from "../../../api/modules/reportsApi";
 import { getMachines } from "../../../api/modules/machinesApi";
 import { getMechanisms } from "../../../api/modules/mechanismsApi";
 import { getSuppliers } from "../../../api/modules/suppliersApi";
-import { getUsers, getCurrentUser } from "../../../api/modules/usersApi";
+import { getUsers } from "../../../api/modules/usersApi";
 import { getWarehouses } from "../../../api/modules/warehousesApi";
+import { useAuthStore } from "../../../store/useAuthStore";
 
 const STATUS_AR_TO_EN = {
   "لم تراجع": "draft",
@@ -21,18 +22,7 @@ export function useReportsLogic(
   initialPage = 0,
   initialFilters = {}
 ) {
-  // ===== user =====
-  const [user, setUser] = useState(null);
-  const [isUserLoading, setIsUserLoading] = useState(true);
-
-  useEffect(() => {
-    setIsUserLoading(true);
-    getCurrentUser()
-      .then((res) => setUser(res.data))
-      .catch(() => setUser(null))
-      .finally(() => setIsUserLoading(false));
-  }, []);
-
+  const { user, isUserLoading } = useAuthStore();
   const canViewPrices = !!(user?.view_prices || user?.username === "admin");
 
   // ===== basic state =====
@@ -139,7 +129,9 @@ export function useReportsLogic(
       setLoadingSuppliers(true);
       getSuppliers({ page: 0, page_size: 1000, all: true })
         .then((res) => setSuppliers(res.data.suppliers || res.data || []))
-        .catch(() => openSnackbar("فشل تحميل الموردين، حاول مرة أخرى", "error"))
+        .catch(() =>
+          openSnackbar("فشل تحميل الموردين، حاول مرة أخرى", "error")
+        )
         .finally(() => setLoadingSuppliers(false));
     }
 
@@ -279,8 +271,8 @@ export function useReportsLogic(
         reportType === "فواتير"
           ? "invoice"
           : reportType === "مخازن"
-            ? "item"
-            : "invoice";
+          ? "item"
+          : "invoice";
 
       const params = {
         reportType: apiReportType,
