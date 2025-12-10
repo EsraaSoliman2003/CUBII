@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import {
   returnWarrantyInvoice,
   returnWarrantyInvoicePartially,
+  getInvoice,
 } from "../../../api/modules/invoicesApi";
 import SnackBar from "../../../components/common/SnackBar";
 
@@ -12,6 +13,7 @@ export default function ReturnQuantityDialog({
   selectedInvoice,
   selectedItemIndex,
   setSelectedInvoice,
+  onInvoiceUpdated,
 }) {
   const [quantity, setQuantity] = useState("");
   const [snackbar, setSnackbar] = useState({
@@ -43,8 +45,7 @@ export default function ReturnQuantityDialog({
   const maxQuantity =
     Math.max(
       0,
-      (Number(item?.quantity) || 0) -
-        (Number(item?.total_returned) || 0)
+      (Number(item?.quantity) || 0) - (Number(item?.total_returned) || 0)
     ) || 0;
 
   const handleConfirm = async () => {
@@ -78,37 +79,80 @@ export default function ReturnQuantityDialog({
         quantity: q,
       });
 
-      const res = await returnWarrantyInvoicePartially({
+      const statusRes = await returnWarrantyInvoicePartially({
         id: selectedInvoice.id,
       });
-      const updatedStatus = res.data;
+      const updatedStatus = statusRes.data;
+      const invoiceRes = await getInvoice(selectedInvoice.id);
+      const data = invoiceRes.data;
 
-      setSelectedInvoice((prev) => ({
-        ...prev,
-        items: prev.items.map((it, idx) => {
-          if (idx !== selectedItemIndex) return it;
+      const datePart = data.created_at
+        ? data.created_at.split(" ")[0]
+        : data.date || "";
+      const timePart = data.created_at
+        ? new Date(
+            `1970-01-01 ${data.created_at.split(" ")[1]}`
+          ).toLocaleTimeString("en-US", {
+            hour12: true,
+            hour: "numeric",
+            minute: "2-digit",
+          })
+        : data.time || "";
 
-          const match =
-            updatedStatus?.items?.find(
-              (r) =>
-                r.item_name === it.item_name &&
-                r.item_bar === it.barcode &&
-                r.location === it.location
-            ) || {};
+      const itemsWithReturn =
+        data.type === "أمانات" && updatedStatus?.items
+          ? (data.items || []).map((it) => {
+              const match = updatedStatus.items.find(
+                (r) =>
+                  r.item_name === it.item_name &&
+                  r.item_bar === it.barcode &&
+                  r.location === it.location
+              );
 
-          return {
-            ...it,
-            total_returned:
-              typeof match.total_returned === "number"
-                ? match.total_returned
-                : it.total_returned || 0,
-            is_fully_returned:
-              typeof match.is_fully_returned === "boolean"
-                ? match.is_fully_returned
-                : false,
-          };
-        }),
-      }));
+              if (!match) {
+                return {
+                  ...it,
+                  total_returned: it.total_returned || 0,
+                  is_fully_returned: it.is_fully_returned || false,
+                };
+              }
+
+              return {
+                ...it,
+                total_returned:
+                  typeof match.total_returned === "number"
+                    ? match.total_returned
+                    : it.total_returned || 0,
+                is_fully_returned:
+                  typeof match.is_fully_returned === "boolean"
+                    ? match.is_fully_returned
+                    : it.is_fully_returned || false,
+              };
+            })
+          : data.items || [];
+
+      const isInvoiceFullyReturned =
+        data.type === "أمانات" &&
+        itemsWithReturn.length > 0 &&
+        itemsWithReturn.every((it) => {
+          const qty = Number(it.quantity) || 0;
+          const returned = Number(it.total_returned) || 0;
+          return it.is_fully_returned || returned >= qty;
+        });
+
+      const newStatus = isInvoiceFullyReturned
+        ? "تم الاسترداد"
+        : data.status || "استرداد جزئي";
+
+      setSelectedInvoice({
+        ...data,
+        status: newStatus,
+        date: datePart,
+        time: timePart,
+        items: itemsWithReturn,
+      });
+
+      onInvoiceUpdated?.();
 
       setSnackbar({
         open: true,
@@ -131,10 +175,7 @@ export default function ReturnQuantityDialog({
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-        <div
-          className="bg-white  shadow-lg max-w-sm w-full p-4"
-          dir="rtl"
-        >
+        <div className="bg-white shadow-lg max-w-sm w-full p-4" dir="rtl">
           <h2 className="text-base font-semibold text-gray-800 mb-3 text-center">
             كمية الاسترداد
           </h2>
@@ -147,7 +188,7 @@ export default function ReturnQuantityDialog({
           <input
             type="number"
             min="0"
-            className="w-full border border-gray-300  px-2 py-2 text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 px-2 py-2 text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
           />
@@ -157,14 +198,14 @@ export default function ReturnQuantityDialog({
               type="button"
               onClick={handleConfirm}
               disabled={loading}
-              className="px-4 py-2  bg-blue-600 text-white text-sm disabled:opacity-50"
+              className="px-4 py-2 bg-blue-600 text-white text-sm disabled:opacity-50"
             >
               {loading ? "جارٍ الحفظ..." : "تأكيد"}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2  bg-red-600 text-white text-sm"
+              className="px-4 py-2 bg-red-600 text-white text-sm"
             >
               إلغاء
             </button>

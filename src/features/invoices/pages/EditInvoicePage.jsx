@@ -4,10 +4,12 @@ import { useParams, Navigate } from "react-router-dom";
 import {
   getInvoice,
   updateInvoice as apiUpdateInvoice,
+  returnWarrantyInvoicePartially, // ✅ جديد
 } from "../../../api/modules/invoicesApi";
 import InvoiceLayout from "../components/InvoiceLayout";
 import SnackBar from "../../../components/common/SnackBar";
 import { useAuthStore } from "../../../store/useAuthStore";
+import { mapInvoiceFromApi } from "../utils/invoiceHelpers"; // ✅ جديد
 
 export default function EditInvoicePage() {
   const { id } = useParams();
@@ -22,52 +24,43 @@ export default function EditInvoicePage() {
     type: "",
   });
 
-  // تحميل بيانات المستخدم
   useEffect(() => {
     fetchCurrentUser();
   }, [fetchCurrentUser]);
 
-  // تحميل الفاتورة
   useEffect(() => {
     let mounted = true;
     setIsLoading(true);
 
-    getInvoice(id)
-      .then((res) => {
+    (async () => {
+      try {
+        const res = await getInvoice(id);
         if (!mounted) return;
 
         const data = res.data;
+        let status = null;
 
-        const datePart = data.created_at
-          ? data.created_at.split(" ")[0]
-          : data.date || "";
-        const timePart = data.created_at
-          ? new Date(
-              `1970-01-01 ${data.created_at.split(" ")[1]}`
-            ).toLocaleTimeString("en-US", {
-              hour12: true,
-              hour: "numeric",
-              minute: "2-digit",
-            })
-          : data.time || "";
+        if (data.type === "أمانات") {
+          const statusRes = await returnWarrantyInvoicePartially({
+            id: data.id,
+          });
+          if (!mounted) return;
+          status = statusRes.data;
+        }
 
-        setEditingInvoice({
-          ...data,
-          date: datePart,
-          time: timePart,
-        });
-      })
-      .catch((err) => {
+        setEditingInvoice(mapInvoiceFromApi(data, status));
+      } catch (err) {
         console.error("getInvoice error", err);
-      })
-      .finally(() => mounted && setIsLoading(false));
+      } finally {
+        mounted && setIsLoading(false);
+      }
+    })();
 
     return () => {
       mounted = false;
     };
   }, [id]);
 
-  // لسه بيجيب بيانات اليوزر أو الفاتورة
   if (isLoading || isUserLoading || !editingInvoice) {
     return (
       <div className="w-full h-[60vh] flex items-center justify-center">
@@ -76,12 +69,10 @@ export default function EditInvoicePage() {
     );
   }
 
-  // لو مفيش يوزر لأي سبب
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  // ✅ هنا التحقق من صلاحية التعديل
   const canEditInvoice = user?.can_edit || user?.username === "admin";
 
   if (!canEditInvoice) {
@@ -92,7 +83,6 @@ export default function EditInvoicePage() {
     );
   }
 
-  // عرض الأسعار حسب الصلاحية
   const canViewPrices = user?.view_prices || user?.username === "admin";
 
   const handleSave = async () => {

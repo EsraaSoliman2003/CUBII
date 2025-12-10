@@ -20,6 +20,7 @@ export default function InvoiceItemsTable({
   justEditUnitPrice = false,
   canEsterdad = false,
   setSelectedInvoice,
+  onInvoiceUpdated,
   canViewPrices = false,
   isCreate = false,
 }) {
@@ -52,7 +53,7 @@ export default function InvoiceItemsTable({
 
   const showReturnedQtyColumn = isAmanatType && canEsterdad;
 
-  // === بقية اللوجيك كما هو بدون تغيير ===
+  // suppliers
   useEffect(() => {
     const shouldFetch = isEditing && isAdditionType && !justEditUnitPrice;
 
@@ -81,6 +82,7 @@ export default function InvoiceItemsTable({
     };
   }, [isEditing, isAdditionType, justEditUnitPrice]);
 
+  // warehouses
   useEffect(() => {
     const shouldFetch = isEditing && !justEditUnitPrice;
     if (!shouldFetch) return;
@@ -268,7 +270,6 @@ export default function InvoiceItemsTable({
 
   return (
     <>
-      {/* 🔹 مكمل لنفس الإطار: بدون مسافة، بوردر من تحت بس و Rounded من تحت */}
       <div className="border border-gray-300 border-t-0" dir="rtl">
         <table className="w-full text-sm">
           <thead className="bg-[#dddddd] text-gray-800">
@@ -340,7 +341,6 @@ export default function InvoiceItemsTable({
 
               return (
                 <tr key={index} className="even:bg-gray-50">
-                  {/* باقي الصفوف كما هي */}
                   <td className="border border-gray-300 px-2 py-1 text-center align-middle relative">
                     <span>{index + 1}</span>
                     {isEditing && !justEditUnitPrice && (
@@ -372,7 +372,6 @@ export default function InvoiceItemsTable({
                       )}
                   </td>
 
-                  {/* ... باقي الأعمدة بدون تغيير (نسخة من كودك الحالي) ... */}
                   {/* supplier */}
                   {isAdditionType && (
                     <td className="border border-gray-300 px-2 py-1">
@@ -591,6 +590,7 @@ export default function InvoiceItemsTable({
           selectedInvoice={selectedInvoice}
           selectedItemIndex={returnItemIndex}
           setSelectedInvoice={setSelectedInvoice}
+          onInvoiceUpdated={onInvoiceUpdated}
         />
       )}
 

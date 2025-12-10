@@ -23,6 +23,7 @@ export default function InvoiceLayout({
   canEsterdad = false,
   setSelectedInvoice,
   canViewPrices = false,
+  onInvoiceUpdated,
 }) {
   return (
     <div
@@ -56,10 +57,13 @@ export default function InvoiceLayout({
         canEsterdad={canEsterdad}
         setSelectedInvoice={setSelectedInvoice}
         canViewPrices={canViewPrices}
+        onInvoiceUpdated={onInvoiceUpdated}
       />
 
       {canViewPrices &&
-        ((isPurchasesType || selectedInvoice.type === "اضافه") || (!isPurchasesType && !isCreate)) && (
+        (isPurchasesType ||
+          selectedInvoice.type === "اضافه" ||
+          (!isPurchasesType && !isCreate)) && (
           <InvoiceMoneySummary
             selectedInvoice={selectedInvoice}
             editingInvoice={editingInvoice}

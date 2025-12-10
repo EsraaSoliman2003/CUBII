@@ -7,10 +7,15 @@ import {
 } from "../../../api/modules/invoicesApi";
 import InvoiceLayout from "../../invoices/components/InvoiceLayout";
 import SnackBar from "../../../components/common/SnackBar";
-// ✅ استدعاء هوك الطباعة
 import { useInvoicePrint } from "../../invoices/hooks/useInvoicePrint";
 
-export default function InvoiceModal({ open, onClose, invoice, user }) {
+export default function InvoiceModal({
+  open,
+  onClose,
+  invoice,
+  user,
+  onInvoiceUpdated,
+}) {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -24,7 +29,6 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
     type: "",
   });
 
-  // ✅ هوك الطباعة
   const { handlePrint } = useInvoicePrint();
 
   const isAdmin = user?.username === "admin";
@@ -32,7 +36,6 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
   const canViewPrices = user?.view_prices || isAdmin;
   const canRecoverDeposits = user?.can_recover_deposits || isAdmin;
 
-  // 1) تحميل الفاتورة
   useEffect(() => {
     if (!open || !invoice?.id) return;
 
@@ -87,7 +90,6 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
     };
   }, [open, invoice?.id]);
 
-  // 2) لو الفاتورة أمانات: حالة الاسترداد
   useEffect(() => {
     if (!selectedInvoice || selectedInvoice.type !== "أمانات") return;
 
@@ -208,6 +210,7 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
 
       setSelectedInvoice(editingInvoice);
       setIsEditing(false);
+      onInvoiceUpdated?.();
 
       setSnackbar({
         open: true,
@@ -279,14 +282,12 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
           dir="rtl"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* هيدر المودال */}
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold text-slate-800">
               الفاتورة رقم {invoice.id}
             </h2>
 
             <div className="flex items-center gap-2">
-              {/* ✅ زر الطباعة – مفعّل فقط في وضع العرض */}
               <button
                 type="button"
                 onClick={() => handlePrint("printable-invoice-modal")}
@@ -342,7 +343,6 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
             </div>
           </div>
 
-          {/* محتوى الفاتورة */}
           {loading || !selectedInvoice || !editingInvoice ? (
             <div className="w-full py-10 flex items-center justify-center">
               <div className="h-8 w-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -363,6 +363,7 @@ export default function InvoiceModal({ open, onClose, invoice, user }) {
               canEsterdad={isDeposit && canRecoverDeposits}
               setSelectedInvoice={setSelectedInvoice}
               canViewPrices={canViewPrices}
+              onInvoiceUpdated={onInvoiceUpdated}
             />
           )}
         </div>

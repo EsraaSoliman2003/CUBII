@@ -1,7 +1,8 @@
 // src/features/invoices/components/OriginalInvoiceDialog.jsx
 import React, { useEffect, useState } from "react";
-import { getInvoice } from "../../../api/modules/invoicesApi";
+import { getInvoice, returnWarrantyInvoicePartially } from "../../../api/modules/invoicesApi";
 import InvoiceLayout from "./InvoiceLayout";
+import { mapInvoiceFromApi } from "../utils/invoiceHelpers";
 
 export default function OriginalInvoiceDialog({
   open,
@@ -21,19 +22,30 @@ export default function OriginalInvoiceDialog({
     setIsLoading(true);
     setIsError(false);
 
-    getInvoice(invoiceId)
-      .then((res) => {
+    (async () => {
+      try {
+        const res = await getInvoice(invoiceId);
         if (!mounted) return;
 
-        const data = res.data;
+        const inv = res.data;
+        let status = null;
 
-        setData(data);
-      })
-      .catch((err) => {
+        if (inv.type === "أمانات") {
+          const statusRes = await returnWarrantyInvoicePartially({
+            id: inv.id,
+          });
+          if (!mounted) return;
+          status = statusRes.data;
+        }
+
+        setData(mapInvoiceFromApi(inv, status));
+      } catch (err) {
         console.error("getInvoice error", err);
         if (mounted) setIsError(true);
-      })
-      .finally(() => mounted && setIsLoading(false));
+      } finally {
+        mounted && setIsLoading(false);
+      }
+    })();
 
     return () => {
       mounted = false;

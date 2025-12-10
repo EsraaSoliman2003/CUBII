@@ -7,6 +7,7 @@ import {
 } from "../../../api/modules/invoicesApi";
 import InvoiceLayout from "../components/InvoiceLayout";
 import { useAuthStore } from "../../../store/useAuthStore";
+import { mapInvoiceFromApi } from "../utils/invoiceHelpers"; // ✅ جديد
 
 export default function ViewInvoicePage() {
   const { id } = useParams();
@@ -19,45 +20,39 @@ export default function ViewInvoicePage() {
     fetchCurrentUser();
   }, [fetchCurrentUser]);
 
-  // تحميل الفاتورة
   useEffect(() => {
     let mounted = true;
     setIsLoading(true);
 
-    getInvoice(id)
-      .then((res) => {
+    (async () => {
+      try {
+        const res = await getInvoice(id);
         if (!mounted) return;
 
         const data = res.data;
+        let status = null;
 
-        const datePart = data.created_at
-          ? data.created_at.split(" ")[0]
-          : data.date || "";
-        const timePart = data.created_at
-          ? new Date(
-              `1970-01-01 ${data.created_at.split(" ")[1]}`
-            ).toLocaleTimeString("en-US", {
-              hour12: true,
-              hour: "numeric",
-              minute: "2-digit",
-            })
-          : data.time || "";
+        if (data.type === "أمانات") {
+          const statusRes = await returnWarrantyInvoicePartially({
+            id: data.id,
+          });
+          if (!mounted) return;
+          status = statusRes.data;
+        }
 
-        setInvoice({
-          ...data,
-          date: datePart,
-          time: timePart,
-        });
-      })
-      .catch((err) => console.error("getInvoice error", err))
-      .finally(() => mounted && setIsLoading(false));
+        setInvoice(mapInvoiceFromApi(data, status));
+      } catch (err) {
+        console.error("getInvoice error", err);
+      } finally {
+        mounted && setIsLoading(false);
+      }
+    })();
 
     return () => {
       mounted = false;
     };
   }, [id]);
 
-  // تحميل حالة الاسترداد لفاتورة الأمانات
   useEffect(() => {
     if (!invoice || invoice.type !== "أمانات") return;
 

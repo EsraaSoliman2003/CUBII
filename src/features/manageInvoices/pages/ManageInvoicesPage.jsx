@@ -1,4 +1,4 @@
-// src/features/invoices/pages/ManageInvoicesPage.jsx
+// src/features/invoices/manageInvoices/pages/ManageInvoicesPage.jsx
 import React, { useEffect, useState, useCallback } from "react";
 import { useAuthStore } from "../../../store/useAuthStore";
 import { useInvoicesList } from "../hooks/useInvoicesList";
@@ -137,6 +137,10 @@ const ManageInvoicesPage = () => {
     setSelectedRowIds([]);
   };
 
+  const handleInvoiceUpdated = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
   if (isUserLoading) {
     return (
       <div className="flex items-center justify-center min-h-[70vh]">
@@ -157,12 +161,11 @@ const ManageInvoicesPage = () => {
 
   return (
     <div className="w-[95%] mx-auto pt-24 pb-6 space-y-4">
-<div className="w-full text-center">
-  <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
-    العمليات
-  </h1>
-</div>
-
+      <div className="w-full text-center">
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
+          العمليات
+        </h1>
+      </div>
 
       {/* Alert */}
       {alert && (
@@ -171,8 +174,8 @@ const ManageInvoicesPage = () => {
             alert.type === "success"
               ? "bg-green-50 border-green-400 text-green-700"
               : alert.type === "warning"
-                ? "bg-yellow-50 border-yellow-400 text-yellow-700"
-                : "bg-red-50 border-red-400 text-red-700"
+              ? "bg-yellow-50 border-yellow-400 text-yellow-700"
+              : "bg-red-50 border-red-400 text-red-700"
           }`}
         >
           <div className="flex justify-between items-center">
@@ -252,6 +255,7 @@ const ManageInvoicesPage = () => {
           onClose={closeInvoiceModal}
           invoice={selectedInvoice}
           user={user}
+          onInvoiceUpdated={handleInvoiceUpdated}
         />
       )}
 
