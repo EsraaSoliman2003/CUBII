@@ -25,11 +25,8 @@ export default function InvoiceLayout({
   canViewPrices = false,
   onInvoiceUpdated,
 }) {
-return (
-  <div className={`${className}`}>
-    {/* الكارت الأبيض الموحد */}
-    <div className="bg-white border border-gray-300 rounded-lg p-5" dir="rtl">
-      
+  return (
+    <div className={className} dir="rtl">
       <InvoiceHeader invoice={selectedInvoice} />
 
       <InvoiceMetaInfo
@@ -88,7 +85,5 @@ return (
         setEditingInvoice={setEditingInvoice}
       />
     </div>
-  </div>
-);
-
+  );
 }

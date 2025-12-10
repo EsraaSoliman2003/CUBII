@@ -19,6 +19,9 @@ export default function CustomAutoCompleteField({
   const [inputValue, setInputValue] = useState(
     (editingItem && editingItem[fieldName]) || ""
   );
+
+  const [dropdownRect, setDropdownRect] = useState(null);
+
   const wrapperRef = useRef(null);
 
   const effectiveLoading = isLoading || loading;
@@ -116,6 +119,39 @@ export default function CustomAutoCompleteField({
     }
   };
 
+  const openDropdown = () => {
+    if (!wrapperRef.current) {
+      setOpen(true);
+      return;
+    }
+
+    const rect = wrapperRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const desiredHeight = 240;
+    const spaceAbove = rect.top;
+    const spaceBelow = viewportHeight - rect.bottom;
+
+    let top;
+    if (spaceBelow >= desiredHeight || spaceBelow >= spaceAbove) {
+      top = rect.bottom + 4;
+    } else {
+      top = Math.max(8, rect.top - desiredHeight - 4);
+    }
+
+    setDropdownRect({
+      top,
+      left: rect.left,
+      width: rect.width,
+      maxHeight: desiredHeight,
+    });
+
+    setOpen(true);
+  };
+
+  const dropdownBaseClasses = `${
+    isBig ? "text-sm" : "text-xs"
+  } max-h-60 w-full rounded-md border border-gray-200 bg-white shadow-lg overflow-auto`;
+
   return (
     <div
       className={`relative w-full text-sm ${containerClassName}`}
@@ -129,10 +165,12 @@ export default function CustomAutoCompleteField({
           } ${inputClassName}`}
           placeholder={placeholder}
           value={inputValue}
-          onFocus={() => setOpen(true)}
+          onFocus={() => {
+            openDropdown();
+          }}
           onChange={(e) => {
             setInputValue(e.target.value);
-            setOpen(true);
+            openDropdown();
           }}
         />
 
@@ -143,11 +181,15 @@ export default function CustomAutoCompleteField({
         )}
       </div>
 
-      {open && filteredOptions.length > 0 && (
+      {open && filteredOptions.length > 0 && dropdownRect && (
         <div
-          className={`absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg ${
-            isBig ? "text-sm" : "text-xs"
-          }`}
+          className={`fixed z-[9999] ${dropdownBaseClasses}`}
+          style={{
+            top: dropdownRect.top,
+            left: dropdownRect.left,
+            width: dropdownRect.width,
+            maxHeight: dropdownRect.maxHeight,
+          }}
         >
           {filteredOptions.map((opt, idx) => (
             <button
@@ -168,11 +210,21 @@ export default function CustomAutoCompleteField({
         </div>
       )}
 
-      {open && !effectiveLoading && filteredOptions.length === 0 && (
-        <div className="absolute z-20 mt-1 w-full rounded-md border border-gray-200 bg-white px-3 py-1.5 text-center text-xs text-gray-500 shadow">
-          لا توجد نتائج
-        </div>
-      )}
+      {open &&
+        !effectiveLoading &&
+        filteredOptions.length === 0 &&
+        dropdownRect && (
+          <div
+            className="fixed z-[9999] w-full rounded-md border border-gray-200 bg-white px-3 py-1.5 text-center text-xs text-gray-500 shadow"
+            style={{
+              top: dropdownRect.top,
+              left: dropdownRect.left,
+              width: dropdownRect.width,
+            }}
+          >
+            لا توجد نتائج
+          </div>
+        )}
     </div>
   );
 }
