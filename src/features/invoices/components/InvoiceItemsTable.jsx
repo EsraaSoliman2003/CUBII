@@ -1,5 +1,5 @@
 // src/features/invoices/components/InvoiceItemsTable.jsx
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import CustomAutoCompleteField from "../../../components/common/CustomAutoCompleteField";
 import NumberInput from "../../../components/common/NumberInput";
 import SnackBar from "../../../components/common/SnackBar";
@@ -52,6 +52,21 @@ export default function InvoiceItemsTable({
     editingInvoice?.type === "أمانات";
 
   const showReturnedQtyColumn = isAmanatType && canEsterdad;
+
+  const originalInvoiceRef = useRef(null);
+
+  useEffect(() => {
+    if (isCreate) {
+      originalInvoiceRef.current = null;
+      return;
+    }
+
+    if (isEditing && selectedInvoice && !originalInvoiceRef.current) {
+      originalInvoiceRef.current = JSON.parse(
+        JSON.stringify(selectedInvoice)
+      );
+    }
+  }, [isCreate, isEditing, selectedInvoice]);
 
   // suppliers
   useEffect(() => {
@@ -192,6 +207,7 @@ export default function InvoiceItemsTable({
     setEditingInvoice({ ...editingInvoice, items: updatedItems });
   };
 
+  // 🟡 تغيير الكمية مع أقصى حد = المخزن + الكمية الأصلية في الفاتورة
   const handleChangeQuantity = (rowIndex, value) => {
     const updatedItems = [...editingInvoice.items];
     const row = updatedItems[rowIndex];
@@ -201,16 +217,48 @@ export default function InvoiceItemsTable({
     if (
       !isAdditionType &&
       !isTransferType &&
-      selectedInvoice.type !== "طلب شراء"
+      selectedInvoice?.type !== "طلب شراء"
     ) {
-      if (q > (row.maxquantity || 0)) {
+      let stockQuantity = 0;
+
+      if (row.maxquantity != null) {
+        stockQuantity = Number(row.maxquantity) || 0;
+      } else {
+        const whItem = warehouseByBarcode.get(row.barcode);
+        if (whItem && row.location) {
+          const foundLoc = (whItem.locations || []).find(
+            (l) => l.location === row.location
+          );
+          if (foundLoc) {
+            stockQuantity = Number(foundLoc.quantity) || 0;
+          }
+        }
+      }
+
+      let originalQty = 0;
+      if (!isCreate && originalInvoiceRef.current?.items) {
+        const originalMatch = originalInvoiceRef.current.items.find(
+          (it) =>
+            it.barcode === row.barcode &&
+            it.location === row.location &&
+            it.item_name === row.item_name
+        );
+
+        if (originalMatch && originalMatch.quantity != null) {
+          originalQty = Number(originalMatch.quantity) || 0;
+        }
+      }
+
+      const allowedMax = stockQuantity + originalQty;
+
+      if (q > allowedMax) {
         setSnackbar({
           open: true,
-          message: `الكمية القصوى المسموح بها هي ${row.maxquantity || 0}`,
+          message: `الكمية القصوى المسموح بها هي ${allowedMax}`,
           type: "warning",
         });
+        q = allowedMax;
       }
-      q = Math.min(q, row.maxquantity || 0);
     }
 
     updatedItems[rowIndex] = {
