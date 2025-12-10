@@ -131,50 +131,68 @@ export default function CreateInvoicePage() {
 
   return (
     <div className="min-h-screen pt-24 pb-10" dir="rtl">
-      {!isInvoiceSaved && (
-        <div className="max-w-6xl mx-auto mb-4 flex flex-wrap justify-center items-center gap-6">
-          {(user?.create_additions || user?.username === "admin") && (
-            <TypeSelector
-              label="مشتريات"
-              value={purchasesType}
-              options={purchasesTypes}
-              onChange={(e) => handleTypeChange(e.target.value, true)}
-            />
-          )}
-
-          {(user?.create_inventory_operations ||
-            user?.username === "admin") && (
-            <TypeSelector
-              label="عمليات"
-              value={operationType}
-              options={operationTypes}
-              onChange={(e) => handleTypeChange(e.target.value, false)}
-            />
-          )}
-
-          <div className="flex items-center">
-            {!isPurchaseOrder ? (
-              <button
-                type="button"
-                className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm"
-                onClick={() => setIsPurchaseOrder(true)}
-              >
-                طلب شراء
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="px-4 py-2 rounded-md border border-red-500 text-red-600 text-sm bg-white"
-                onClick={() => setIsPurchaseOrder(false)}
-              >
-                إلغاء
-              </button>
-            )}
-          </div>
+{!isInvoiceSaved && (
+  <div className="max-w-7xl mx-auto mb-6">
+    
+    {/* شريط الخيارات */}
+    <div className="bg-white shadow-sm border border-gray-200 rounded-lg px-5 py-4 flex flex-wrap items-center justify-center gap-5">
+      
+      {/* نوع المشتريات */}
+      {(user?.create_additions || user?.username === "admin") && (
+        <div className="flex flex-col items-center">
+          <label className="text-xs text-gray-600 mb-1">نوع المشتريات</label>
+          <TypeSelector
+            label=""
+            value={purchasesType}
+            options={purchasesTypes}
+            onChange={(e) => handleTypeChange(e.target.value, true)}
+            className="min-w-[130px]"
+          />
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto">
+      {/* نوع العمليات */}
+      {(user?.create_inventory_operations || user?.username === "admin") && (
+        <div className="flex flex-col items-center">
+          <label className="text-xs text-gray-600 mb-1">نوع العملية</label>
+          <TypeSelector
+            label=""
+            value={operationType}
+            options={operationTypes}
+            onChange={(e) => handleTypeChange(e.target.value, false)}
+            className="min-w-[130px]"
+          />
+        </div>
+      )}
+
+      {/* زر طلب الشراء */}
+      <div className="flex flex-col items-center">
+        <label className="text-xs text-gray-600 mb-1">طلب شراء</label>
+
+        {!isPurchaseOrder ? (
+          <button
+            type="button"
+            className="min-w-[130px] px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 transition text-white text-sm shadow-sm"
+            onClick={() => setIsPurchaseOrder(true)}
+          >
+            إضافة طلب شراء
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="min-w-[130px] px-4 py-2 rounded-md border border-red-500 text-red-500 bg-white hover:bg-red-50 transition text-sm shadow-sm"
+            onClick={() => setIsPurchaseOrder(false)}
+          >
+            إلغاء الطلب
+          </button>
+        )}
+      </div>
+    </div>
+  </div>
+)}
+
+
+      <div className="max-w-7xl mx-auto">
         <div className="w-full overflow-x-auto overflow-y-visible">
           <div className={`gap-5 min-w-max ${isPurchaseOrder ? "flex" : ""}`}>
             {isPurchaseOrder && (
