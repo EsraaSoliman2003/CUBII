@@ -4,6 +4,7 @@ import {
   getInvoice,
   updateInvoice as apiUpdateInvoice,
   returnWarrantyInvoicePartially,
+  getBookingDeductions,
 } from "../../../api/modules/invoicesApi";
 import InvoiceLayout from "../../invoices/components/InvoiceLayout";
 import SnackBar from "../../../components/common/SnackBar";
@@ -181,6 +182,53 @@ export default function InvoiceModal({
     };
 
     fetchReturnStatus();
+
+    return () => {
+      mounted = false;
+    };
+  }, [selectedInvoice?.id, selectedInvoice?.type]);
+
+  useEffect(() => {
+    if (!selectedInvoice || selectedInvoice.type !== "حجز") return;
+
+    let mounted = true;
+
+    (async () => {
+      try {
+        const res = await getBookingDeductions(selectedInvoice.id);
+        if (!mounted) return;
+
+        const bookingData = res.data;
+
+        const enhance = (prev) =>
+          !prev
+            ? prev
+            : {
+                ...prev,
+                items: (prev.items || []).map((it) => {
+                  const match =
+                    (bookingData.items || []).find(
+                      (b) =>
+                        (b.item_id && b.item_id === it.item_id) ||
+                        (b.barcode === it.barcode &&
+                          b.item_name === it.item_name)
+                    ) || null;
+
+                  return {
+                    ...it,
+                    borrowed_to_main_quantity: match?.deducted_quantity ?? 0,
+                    booking_remaining_quantity:
+                      match?.remaining_quantity ?? null,
+                  };
+                }),
+              };
+
+        setSelectedInvoice(enhance);
+        setEditingInvoice(enhance);
+      } catch (err) {
+        console.error("getBookingDeductions error in InvoiceModal", err);
+      }
+    })();
 
     return () => {
       mounted = false;

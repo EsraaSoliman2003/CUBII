@@ -51,6 +51,11 @@ export default function InvoiceItemsTable({
     selectedInvoice?.type === "أمانات" ||
     editingInvoice?.type === "أمانات";
 
+      const isBookingType =
+    selectedNowType?.type === "حجز" ||
+    selectedInvoice?.type === "حجز" ||
+    editingInvoice?.type === "حجز";
+
   const showReturnedQtyColumn = isAmanatType && canEsterdad;
 
   const originalInvoiceRef = useRef(null);
@@ -205,59 +210,11 @@ export default function InvoiceItemsTable({
     setEditingInvoice({ ...editingInvoice, items: updatedItems });
   };
 
-  // 🟡 تغيير الكمية مع أقصى حد = المخزن + الكمية الأصلية في الفاتورة
   const handleChangeQuantity = (rowIndex, value) => {
     const updatedItems = [...editingInvoice.items];
     const row = updatedItems[rowIndex];
 
     let q = Math.max(0, Number(value) || 0);
-
-    if (
-      !isAdditionType &&
-      !isTransferType &&
-      selectedInvoice?.type !== "طلب شراء"
-    ) {
-      let stockQuantity = 0;
-
-      if (row.maxquantity != null) {
-        stockQuantity = Number(row.maxquantity) || 0;
-      } else {
-        const whItem = warehouseByBarcode.get(row.barcode);
-        if (whItem && row.location) {
-          const foundLoc = (whItem.locations || []).find(
-            (l) => l.location === row.location
-          );
-          if (foundLoc) {
-            stockQuantity = Number(foundLoc.quantity) || 0;
-          }
-        }
-      }
-
-      let originalQty = 0;
-      if (!isCreate && originalInvoiceRef.current?.items) {
-        const originalMatch = originalInvoiceRef.current.items.find(
-          (it) =>
-            it.barcode === row.barcode &&
-            it.location === row.location &&
-            it.item_name === row.item_name
-        );
-
-        if (originalMatch && originalMatch.quantity != null) {
-          originalQty = Number(originalMatch.quantity) || 0;
-        }
-      }
-
-      const allowedMax = stockQuantity + originalQty;
-
-      if (q > allowedMax) {
-        setSnackbar({
-          open: true,
-          message: `الكمية القصوى المسموح بها هي ${allowedMax}`,
-          type: "warning",
-        });
-        q = allowedMax;
-      }
-    }
 
     updatedItems[rowIndex] = {
       ...row,
@@ -342,6 +299,12 @@ export default function InvoiceItemsTable({
               <th className="border border-gray-300 px-2 py-1">الباركود</th>
               <th className="border border-gray-300 px-2 py-1">الموقع</th>
               <th className="border border-gray-300 px-2 py-1">الكمية</th>
+
+              {isBookingType && !isCreate && (
+                <th className="border border-gray-300 px-2 py-1">
+                  الكمية المحوّلة للمخزن
+                </th>
+              )}
 
               {showReturnedQtyColumn && (
                 <th className="border border-gray-300 px-2 py-1">
@@ -531,6 +494,12 @@ export default function InvoiceItemsTable({
                       <span>{row.quantity}</span>
                     )}
                   </td>
+
+                  {isBookingType && !isCreate && (
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      {Number(row.borrowed_to_main_quantity || 0)}
+                    </td>
+                  )}
 
                   {showReturnedQtyColumn && (
                     <td className="border border-gray-300 px-2 py-1 text-center">

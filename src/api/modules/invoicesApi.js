@@ -73,3 +73,9 @@ export function getInvoice(id) {
 export function detailsReport(id) {
   return httpClient.get(`/invoice/fifo-prices/${id}`);
 }
+
+// ================== Booking Deductions (حجز) ==================
+
+export function getBookingDeductions(invoiceId) {
+  return httpClient.get(`/rental/missing-qty/${invoiceId}`);
+}

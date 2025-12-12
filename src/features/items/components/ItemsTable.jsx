@@ -84,7 +84,7 @@ export default function ItemsTable({
                         >
                           <ClearOutlinedIcon sx={{ color: "red" }} />
                         </button>
-                                                {/* تفاصيل */}
+                        {/* تفاصيل */}
                         <button
                           onClick={() => onOpenItem(item)}
                           className="p-1 rounded-md hover:bg-gray-100"

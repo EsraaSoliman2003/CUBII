@@ -1,6 +1,10 @@
 // src/features/invoices/components/OriginalInvoiceDialog.jsx
 import React, { useEffect, useState } from "react";
-import { getInvoice, returnWarrantyInvoicePartially } from "../../../api/modules/invoicesApi";
+import {
+  getInvoice,
+  returnWarrantyInvoicePartially,
+  getBookingDeductions,
+} from "../../../api/modules/invoicesApi";
 import InvoiceLayout from "./InvoiceLayout";
 import { mapInvoiceFromApi } from "../utils/invoiceHelpers";
 
@@ -51,6 +55,56 @@ export default function OriginalInvoiceDialog({
       mounted = false;
     };
   }, [open, invoiceId]);
+
+  useEffect(() => {
+  if (!data || data.type !== "حجز") return;
+
+  let mounted = true;
+
+  (async () => {
+    try {
+      const res = await getBookingDeductions(data.id);
+      if (!mounted) return;
+
+      const bookingData = res.data;
+
+      setData((prev) =>
+        !prev
+          ? prev
+          : {
+              ...prev,
+              items: (prev.items || []).map((it) => {
+                const match =
+                  (bookingData.items || []).find(
+                    (b) =>
+                      (b.item_id && b.item_id === it.item_id) ||
+                      (b.barcode === it.barcode &&
+                        b.item_name === it.item_name)
+                  ) || null;
+
+                return {
+                  ...it,
+                  borrowed_to_main_quantity:
+                    match?.deducted_quantity ?? 0,
+                  booking_remaining_quantity:
+                    match?.remaining_quantity ?? null,
+                };
+              }),
+            }
+      );
+    } catch (err) {
+      console.error(
+        "getBookingDeductions error in OriginalInvoiceDialog",
+        err
+      );
+    }
+  })();
+
+  return () => {
+    mounted = false;
+  };
+}, [data?.id, data?.type]);
+
 
   if (!open) return null;
 
